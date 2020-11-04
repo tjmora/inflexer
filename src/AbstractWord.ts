@@ -1,24 +1,33 @@
 import Syllable from "./Syllable"
 
-const ptrn_affix = "(\\w*)",
-    ptrn_specials = "((?:\\$|%|@)[0-9]{1,2})*",
-    ptrn_affix_and_specials = ptrn_specials + ptrn_affix + ptrn_specials,
-    ptrn_prfxpush = "((?:\\.(_)?" + ptrn_affix_and_specials + ")*)",
-    ptrn_sufxpush = "((?:" + ptrn_affix_and_specials + "(_)?\\.)*)",
-    ptrn_rightward_magnet = "(~(\\$|%|@)?)*\:)*",
-    ptrn_leftward_magnet = "((\\$|%|@)?~)*",
-    ptrn_notational_repetition = "(?:[1-3]?[4-6]?[7-9]?)",
-    ptrn_asterisk_repetition = "\\*{1,3}",
-    ptrn_specials_designation = "(\\$|%|@)",
-    ptrn_repetition_combined = "(" + ptrn_specials_designation + "?(" + ptrn_notational_repetition + "|" + ptrn_asterisk_repetition + ")" + ptrn_specials_designation + "?)",
-    ptrn_rightward_multi = "((?:_?" + ptrn_repetition_combined + "\,)*)" + "(_)?" + ptrn_repetition_combined,
-    ptrn_leftward_multi = ptrn_repetition_combined + "(_)?" + "((?:" + ptrn_repetition_combined + "_?\,)*)",
-    ptrn_rightward_repetition = "(?:(" + ptrn_rightward_multi + "?" + ptrn_rightward_magnet + ptrn_rightward_multi + ptrn_rightward_magnet + ";)",
-    ptrn_leftward_repetition = "(?:;" + ptrn_leftward_magnet + ptrn_leftward_multi + "(\:" + ptrn_leftward_magnet + "(" + ptrn_leftward_multi + ")?)*)",
-    ptrn_prefixation = "(?:(?:" + ptrn_affix_and_specials + ")" + ptrn_prfxpush + "-)",
-    ptrn_suffixation = "(?:-" + ptrn_sufxpush + "(?:" + ptrn_affix_and_specials + "))",
-    ptrn_repetition = "(?:" + ptrn_rightward_repetition + "|" + ptrn_leftward_repetition + "|(#*))",
-    ptrn_all = "^" + ptrn_prefixation + "?" + ptrn_repetition + "?" + ptrn_suffixation + "?$"
+const inflexp_pattern 
+    = "("
+    + "(?<prefix>([^ 0-9-.,:;!~$%@_]*)?)"
+    + "(?<prefixSpecials>((\\$|%|@)[0-9]{1,2})*)"
+    + "(?<prefixPush>(\\._?[^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*!{0,3})*)"
+    + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
+    + "(?<prefixMark>=?)"
+    + "\\-)?"
+    + "("
+    + "("
+    + "(?<rightwardRepetitionFirst>(_?=?(~(\\$|%|@)?)*(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*(,(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*)*(~(\\$|%|@)?)*=?))"
+    + "(?<rightwardRepetitionRest>(\\:_?=?(~(\\$|%|@)?)*(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*(,(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*)*(~(\\$|%|@)?)*=?)*)"
+    + ";)"
+    + "|"
+    + "("
+    + "(?<leftwardRepetitionFirst>(=?(~(\\$|%|@)?)*(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*(,(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*)*(~(\\$|%|@)?)*_?=?))"
+    + "(?<leftwardRepetitionRest>(\\:=?(~(\\$|%|@)?)*(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*(,(([1-3]?[4-6]?[8-9]?)|\\*{1,3})(\\$|%|@)*)*(~(\\$|%|@)?)*_?=?)*)"
+    + ")"
+    + "|"
+    + "(?<baseRepetition>(=?#)*)"
+    + ")?"
+    + "(\\-"
+    + "(?<suffixMark>=?)"
+    + "(?<suffixMagnet>(~(\\$|%|@)?)*)"
+    + "(?<suffixPush>([^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*!{0,3}_?\\.)*)"
+    + "(?<suffix>([^ 0-9-.,:;!~$%@_]*)?)"
+    + "(?<suffixSpecials>((\\$|%|@)[0-9]{1,2})*)"
+    + ")?"
 
 export default abstract class AbstractWord {
 
