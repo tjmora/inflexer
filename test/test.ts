@@ -388,34 +388,41 @@ let examples = [
     ["ra·re·ro","-t.s.v.od","rat·res·rov·od"],
     ["ra·re·ro","-t_.s_.v_.od","tra·sre·vro·od"],
     ["ra·re·ro","-t!.s!!.v!!!.od","ta·se·v·od"],
-    ["plan·traks","-in-","pin·lan·traks"],
-    ["plan·traks","--in-","plin·an·traks"],
-    ["plan·traks","--i.n-","pli·nan·traks"],
-    ["plan·traks","--in.m-","plin·man·traks"],
-    ["plan·traks","-.in-","plan·tin·raks"],
-    ["plan·traks","-.i.n-","plan·ti·nraks"],
-    ["plan·traks","-.i.n!-","plan·ti·naks"],
-    ["plan·traks","--.in-","plan·trin·aks"],
-    ["plan·traks","--.i.n-","plan·tri·naks"],
-    ["plan·traks","--.in.m-","plan·trin·maks"],
-    ["gaf·gef·gof","-..i%12.s-","gaf·gef·gī·sof"],
-    ["gaf·gef·gof","-..u.$4-","gaf·gef·gu·óf"],
-    ["sreind·flaust","uzi.t!--~or","u·zi·treind·flaus·tor"],
-    ["sreind·flaust","uzi.$2--e.v!-","u·zi·sè·veind·flaus·tor"],
-    ["sreind·flaust","uzi.$2---e.v-","u·zi·srè·veind·flaus·tor"],
-    ["sreind·flaust","-o.f--!.ai","so·freind·flaus·ai"],
-    ["sreind·flaust","--o.f--!!.ai","sro·feind·flau·ai"],
-    ["sreind·flaust","uzi.t--o.f--!.ai","u·zi·tso·freind·flaus·ai"],
-    ["sreind·flaust","uzi.t!---o.f--!!.ai","u·zi·tro·feind·flau·ai"]
+    ["plan·traks","|in|","pin·lan·traks"],
+    ["plan·traks","||in|","plin·an·traks"],
+    ["plan·traks","||i.n|","pli·nan·traks"],
+    ["plan·traks","||in.m|","plin·man·traks"],
+    ["plan·traks","|.in|","plan·tin·raks"],
+    ["plan·traks","|.i.n|","plan·ti·nraks"],
+    ["plan·traks","|.i.n!|","plan·ti·naks"],
+    ["plan·traks","||.in|","plan·trin·aks"],
+    ["plan·traks","||.i.n|","plan·tri·naks"],
+    ["plan·traks","||.in.m|","plan·trin·maks"],
+    ["gaf·gef·gof","|..i%12.s|","gaf·gef·gī·sof"],
+    ["gaf·gef·gof","|..u.$4|","gaf·gef·gu·óf"],
+    ["sreind·flaust","zi.t!-**;","zi·trei·sreind·flaust"],
+    ["sreind·flaust","zi.t!-|ef.k$4|","zi·tef·kréind·flaust"],
+    ["sreind·flaust","zi.t!-|ef.k$4|/pr","zef·kí·treind·flaust"],
+    ["sreind·flaust","zi.t!--~or","zi·treind·flaus·tor"],
+    ["sreind·flaust","||u.p|;~47","sru·peind·flaus·taust"],
+    ["sreind·flaust","|u.p|-@3.el","su·preind·flãust·el"],
+    ["sreind·flaust",":***;-@3.el","sreind·flaust·flãust·el"],
+    ["sreind·flaust","zi-|i.n|24;-~or","zi·si·nei·sreind·flaus·tor"],
+    ["sreind·flaust","zi-|i.n|24;-~or/spir","zi·zi·ni·sreind·flaus·tor"]
 ]
 
 const inflexp_pattern 
     = "("
-    + "(?<prefix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*))"
-    + "(?<prefixPush>(\\._?!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*!{0,3})*)"
+    + "(?<prefix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
+    + "(?<prefixPush>(\\._?!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3})*)"
     + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
     + "(?<prefixMark>=?)"
-    + "\\-)?"
+    + "(?<!^)\\-)?"
+    + "("
+    + "(?<infixPlacement>(\\|){1,2})"
+    + "(?<infixFirst>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
+    + "(?<infixRest>(\\.((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*)*)"
+    + "\\|)?"
     + "("
     + "("
     + "(?<rightwardRepetitionFirst>(=?_?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+?(~(\\$|%|@)?)*=?)?)"
@@ -432,8 +439,11 @@ const inflexp_pattern
     + "(\\-"
     + "(?<suffixMark>=?)"
     + "(?<suffixMagnet>(~(\\$|%|@)?)*)"
-    + "(?<suffixPush>(!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*!{0,3}_?\\.)*)"
-    + "(?<suffix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9-.,:;!~$%@_]*((\\$|%|@)[0-9]{1,2})*))"
+    + "(?<suffixPush>(!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3}_?\\.)*)"
+    + "(?<suffix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
+    + ")?"
+    + "(/"
+    + "(?<precedence>(r|i|p|s)*)"
     + ")?"
 
 let pattern = new RegExp(inflexp_pattern, "i")
