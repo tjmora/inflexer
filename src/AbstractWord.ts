@@ -5,36 +5,44 @@ import Syllable from "./Syllable"
 export default abstract class AbstractWord {
 
     value: Syllable[]
-    syllabifier: (word: string) => Syllable[]
-    printer: (word: Syllable[]) => string
     
-    constructor (word: string | Syllable[], syllabifier: (word: string) => Syllable[], printer: (word: Syllable[]) => string) {
-        this.syllabifier = syllabifier
-        this.printer = printer
+    constructor (word: string | Syllable[]) {
         this.value = typeof word === "string" ? this.syllabifier(word) : (word as Syllable[])
     }
 
     /**
      * Inhereting classes should implement copy() as follows:
      *     copy () {
-     *         return new ChildClass(this.value.map(syll => syll.copy())) as this
+     *         return new ChildClass(this.value.map(syllable => syllable.copy())) as this
      *     }
      */
     protected abstract copy (): this
 
-    static _repeat (word: AbstractWord, inflection: {[key:string]: string}) {
+    protected abstract syllabifier (word: string): Syllable[]
+
+    protected abstract printer (word: Syllable[]): string
+
+    static _repeat (word: AbstractWord, groups: {[key:string]: string}) {
+        if (groups.rightwardRepetitionFirst !== undefined) {
+            
+        }
+        else if (groups.rightwardRepetitionFirst !== undefined) {
+
+        }
+        else if (groups.baseRepetition !== undefined) {
+
+        }
+    }
+
+    static _infix (word: AbstractWord, groups: {[key:string]: string}) {
 
     }
 
-    static _infix (word: AbstractWord, inflection: {[key:string]: string}) {
+    static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
 
     }
 
-    static _prefix (word: AbstractWord, inflection: {[key:string]: string}) {
-
-    }
-
-    static _suffix (word: AbstractWord, inflection: {[key:string]: string}) {
+    static _suffix (word: AbstractWord, groups: {[key:string]: string}) {
 
     }
 
