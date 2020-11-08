@@ -6,10 +6,11 @@ export default class Syllable {
     stress: number
     vowelLength: number
     tone: number
-    marks: [string, number][]
+    premark: string
+    postmark: string
 
     constructor (onset: string[] = [], nucleus: string[] = [], coda: string[] = [], 
-        stress: number = 0, vowelLength: number = 8, tone: number = 0, marks: [string, number][] = []) {
+        stress = 0, vowelLength = 8, tone = 0, premark = "", postmark = "") {
         
         this.onset = onset
         this.nucleus = nucleus
@@ -17,7 +18,8 @@ export default class Syllable {
         this.stress = stress
         this.vowelLength = vowelLength
         this.tone = tone
-        this.marks = marks
+        this.premark = premark
+        this.postmark = postmark
     }
 
     copy () {
@@ -28,7 +30,8 @@ export default class Syllable {
             this.stress,
             this.vowelLength,
             this.tone,
-            this.marks.map(item => [item[0] as string, item[1] as number])
+            this.premark,
+            this.postmark
         )
     }
 

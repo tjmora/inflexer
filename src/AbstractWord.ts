@@ -1,39 +1,6 @@
+import {inflexpPattern} from "./patterns"
 import Syllable from "./Syllable"
 
-const inflexp_pattern 
-    = "("
-    + "(?<prefix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
-    + "(?<prefixPush>(\\._?!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3})*)"
-    + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
-    + "(?<prefixMark>=?)"
-    + "(?<!^)\\-)?"
-    + "("
-    + "(?<infixPlacement>(\\|){1,2})"
-    + "(?<infixFirst>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
-    + "(?<infixRest>(\\.((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*)*)"
-    + "\\|)?"
-    + "("
-    + "("
-    + "(?<rightwardRepetitionFirst>(=?_?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+?(~(\\$|%|@)?)*=?)?)"
-    + "(?<rightwardRepetitionRest>(\\:(=?_?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+?(~(\\$|%|@)?)*=?)?)*)"
-    + "(?<!^|\\-);)"
-    + "|"
-    + "(;"
-    + "(?<leftwardRepetitionFirst>(=?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+?(~(\\$|%|@)?)*_?=?)?)"
-    + "(?<leftwardRepetitionRest>(\\:(=?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+?(~(\\$|%|@)?)*_?=?)?)*)"
-    + ")"
-    + "|"
-    + "(?<baseRepetition>(#\\+?=?|=?#\\+?)*)"
-    + ")?"
-    + "(\\-"
-    + "(?<suffixMark>=?)"
-    + "(?<suffixMagnet>(~(\\$|%|@)?)*)"
-    + "(?<suffixPush>(!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3}_?\\.)*)"
-    + "(?<suffix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
-    + ")?"
-    + "(/"
-    + "(?<precedence>(r|i|p|s)*)"
-    + ")?"
 
 export default abstract class AbstractWord {
 
@@ -41,16 +8,63 @@ export default abstract class AbstractWord {
     syllabifier: (word: string) => Syllable[]
     printer: (word: Syllable[]) => string
     
-    constructor (word: string, syllabifier: (word: string) => Syllable[], printer: (word: Syllable[]) => string) {
+    constructor (word: string | Syllable[], syllabifier: (word: string) => Syllable[], printer: (word: Syllable[]) => string) {
         this.syllabifier = syllabifier
         this.printer = printer
-        this.value = this.syllabifier(word)
+        this.value = typeof word === "string" ? this.syllabifier(word) : (word as Syllable[])
+    }
+
+    /**
+     * Inhereting classes should implement copy() as follows:
+     *     copy () {
+     *         return new ChildClass(this.value.map(syll => syll.copy())) as this
+     *     }
+     */
+    protected abstract copy (): this
+
+    static _repeat (word: AbstractWord, inflection: {[key:string]: string}) {
+
+    }
+
+    static _infix (word: AbstractWord, inflection: {[key:string]: string}) {
+
+    }
+
+    static _prefix (word: AbstractWord, inflection: {[key:string]: string}) {
+
+    }
+
+    static _suffix (word: AbstractWord, inflection: {[key:string]: string}) {
+
     }
 
     inflect (inflexp: string) {
-
+        let groups = inflexp.match(inflexpPattern)?.groups!
+        let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
+        let result = this.copy()
+        if (groups.precedence !== undefined) {
+            precedence = [];
+            [...groups!.precedence].forEach((ch) => {
+                switch (ch) {
+                    case "r":
+                        precedence.push(AbstractWord._repeat)
+                        break
+                    case "i":
+                        precedence.push(AbstractWord._infix)
+                        break
+                    case "p":
+                        precedence.push(AbstractWord._prefix)
+                        break
+                    case "s":
+                        precedence.push(AbstractWord._suffix)
+                        break
+                    default:
+                }
+            })
+        }
+        precedence.forEach(fn => fn(result, groups))
+        return result
     }
-
 
 }
 
