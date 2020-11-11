@@ -1,4 +1,4 @@
-import {inflexpPattern, rightwardRepetitionPattern, leftwardRepetitionPattern, syllableRepeatPattern} from "./patterns"
+import {inflexpPattern, rightwardRepetitionPattern, leftwardRepetitionPattern, syllableRepeatPattern, baseRepetitionPattern} from "./patterns"
 import Syllable from "./Syllable"
 
 
@@ -22,6 +22,8 @@ export default abstract class AbstractWord {
 
     protected abstract printer (word: Syllable[]): string
 
+    protected abstract specialMarkPlacer (): string
+
     static _repeat (word: AbstractWord, groups: {[key:string]: string}) {
         if (groups.rightwardRepetitionFirst !== undefined || groups.leftwardRepetitionFirst !== undefined) {
             let repetitionInflexp = groups.rightwardRepetitionFirst !== undefined
@@ -44,7 +46,7 @@ export default abstract class AbstractWord {
                         ? 0
                         : 1;
                 if (subgroups.specialMarkBefore !== "")
-                    r[j].premark = "-"
+                    r[j].premark = word.specialMarkPlacer()
                 if (subgroups.magnetBefore !== "") {
                     subgroups.magnetBefore.split("~").slice(1).forEach((special) => {
                         try {
@@ -135,8 +137,10 @@ export default abstract class AbstractWord {
                                 r[j].onset.push(temp)
                         }
                     }
-                    if (subsubgroups.duplicator !== "")
-                        r.splice(r.length, 0, ...r.map(syll => syll.copy()))
+                    if (subsubgroups.duplicator !== "") {
+                        for (let p = 0, q = subsubgroups.duplicator.length; p < q; p++)
+                            r.splice(r.length, 0, ...r.map(syll => syll.copy()))
+                    }
                     j++
                 })
                 if (subgroups.magnetAfter !== "") {
@@ -169,13 +173,28 @@ export default abstract class AbstractWord {
                     })
                 }
                 if (subgroups.specialMarkAfter !== "")
-                    r[j].postmark = "-"
+                    r[j].postmark = word.specialMarkPlacer()
                 if (r.length > 0)
                     word.value.splice(i + placeAfter, 0, ...r)
             })
         }
         else if (groups.baseRepetition !== undefined) {
-
+            groups.baseRepetition.match(baseRepetitionPattern)?.forEach((subinflexp) => {
+                let cpy = word.value.map(syll => syll.copy())
+                let willUnshift = false
+                for (let p = 0, q = (groups.baseRepetition!.match(/\+/g) || []).length; p < q; q++)
+                    cpy.push(...cpy.map(syll => syll.copy()))
+                if (subinflexp.endsWith("=")) {
+                    cpy[cpy.length - 1].postmark = word.specialMarkPlacer()
+                    willUnshift = true
+                }
+                if (subinflexp.startsWith("="))
+                    cpy[0].premark = word.specialMarkPlacer()
+                if (willUnshift)
+                    word.value.unshift(...cpy)
+                else
+                    word.value.push(...cpy)
+            })
         }
     }
 

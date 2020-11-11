@@ -21,7 +21,7 @@ export const inflexpPattern = new RegExp(
     + "(?<leftwardRepetitionRest>(\\:(=?(~(\\$|%|@)?)*(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*(,(\\$\\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\\$\\$|%%|@@)*)*\\+*(~(\\$|%|@)?)*=?_?)?)*)"
     + ")"
     + "|"
-    + "(?<baseRepetition>(#\\+?=?|=?#\\+*)*)"
+    + "(?<baseRepetition>((#\\+*=?)|(=?#\\+*))*)"
     + ")?"
     + "(\\-"
     + "(?<suffixMark>=?)"
@@ -41,3 +41,5 @@ export const rightwardRepetitionPattern = /(?<placeAfter>_?)(?<specialMarkBefore
 export const leftwardRepetitionPattern = /(?<specialMarkBefore>=?)(?<magnetBefore>(~(\$|%|@)?)*)(?<first>(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)(?<rest>(,(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)*)(?<duplicator>\+*)(?<magnetAfter>(~(\$|%|@)?)*)(?<specialMarkAfter>=?)(?<placeBefore>_?)/i
 
 export const syllableRepeatPattern = /(?<specialsBefore>(\$\$|%%|@@)*)(?<main>([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(?<specialsAfter>(\$\$|%%|@@)*)/i
+
+export const baseRepetitionPattern = /(#\+*=?)|(=?#\+*)/g
