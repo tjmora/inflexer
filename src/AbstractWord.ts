@@ -1,4 +1,4 @@
-import {inflexpPattern, rightwardRepetitionPattern, syllableRepeatPattern} from "./patterns"
+import {inflexpPattern, rightwardRepetitionPattern, leftwardRepetitionPattern, syllableRepeatPattern} from "./patterns"
 import Syllable from "./Syllable"
 
 
@@ -23,14 +23,26 @@ export default abstract class AbstractWord {
     protected abstract printer (word: Syllable[]): string
 
     static _repeat (word: AbstractWord, groups: {[key:string]: string}) {
-        if (groups.rightwardRepetitionFirst !== undefined) {
-            let i = -1;
-            (groups.rightwardRepetitionFirst + groups.rightwardRepetitionRest).split(":").forEach((subinflexp) => {
+        if (groups.rightwardRepetitionFirst !== undefined || groups.leftwardRepetitionFirst !== undefined) {
+            let repetitionInflexp = groups.rightwardRepetitionFirst !== undefined
+                ? groups.rightwardRepetitionFirst + groups.rightwardRepetitionRest
+                : groups.leftwardRepetitionFirst + groups.leftwardRepetitionRest
+            let i = groups.rightwardRepetitionFirst !== undefined 
+                ? -1
+                : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 1
+
+            repetitionInflexp.split(":").forEach((subinflexp) => {
                 i++
                 let j = 0
                 let r: Syllable[] = [new Syllable()]
-                let subgroups = subinflexp.match(rightwardRepetitionPattern)!.groups!
-                let placeAfter = subgroups.placeAfter !== "" ? 1 : 0
+                let subgroups = groups.rightwardRepetitionFirst !== undefined
+                    ? subinflexp.match(rightwardRepetitionPattern)!.groups!
+                    : subinflexp.match(leftwardRepetitionPattern)!.groups!
+                let placeAfter = subgroups.placeAfter !== undefined && subgroups.placeAfter !== ""
+                    ? 1 
+                    : subgroups.placeBefore !== undefined && subgroups.placeBefore !== ""
+                        ? 0
+                        : 1;
                 if (subgroups.specialMarkBefore !== "")
                     r[j].premark = "-"
                 if (subgroups.magnetBefore !== "") {
@@ -58,7 +70,7 @@ export default abstract class AbstractWord {
                             }
                         }
                         catch (e) {
-                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetBefore + ") failed to take sounds from the previous syllable.")
+                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetBefore + ") failed to take sounds from the earlier syllable.")
                         }
                     })
                 }
@@ -161,9 +173,6 @@ export default abstract class AbstractWord {
                 if (r.length > 0)
                     word.value.splice(i + placeAfter, 0, ...r)
             })
-        }
-        else if (groups.leftwardRepetitionFirst !== undefined) {
-            
         }
         else if (groups.baseRepetition !== undefined) {
 
