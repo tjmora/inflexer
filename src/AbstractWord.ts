@@ -1,4 +1,4 @@
-import {inflexpPattern, rightwardRepetitionPattern, leftwardRepetitionPattern, syllableRepeatPattern, baseRepetitionPattern} from "./patterns"
+import * as pattern from "./patterns"
 import Syllable from "./Syllable"
 
 
@@ -38,8 +38,8 @@ export default abstract class AbstractWord {
                 let j = 0
                 let r: Syllable[] = [new Syllable()]
                 let subgroups = groups.rightwardRepetitionFirst !== undefined
-                    ? subinflexp.match(rightwardRepetitionPattern)!.groups!
-                    : subinflexp.match(leftwardRepetitionPattern)!.groups!
+                    ? subinflexp.match(pattern.rightwardRepetition)!.groups!
+                    : subinflexp.match(pattern.leftwardRepetition)!.groups!
                 let placeAfter = subgroups.placeAfter !== undefined && subgroups.placeAfter !== ""
                     ? 1 
                     : subgroups.placeBefore !== undefined && subgroups.placeBefore !== ""
@@ -79,7 +79,7 @@ export default abstract class AbstractWord {
                 (subgroups.first+subgroups.rest).split(",").forEach((s) => {
                     if (j > 0)
                         r.push(new Syllable())
-                    let subsubgroups = s.match(syllableRepeatPattern)!.groups!;
+                    let subsubgroups = s.match(pattern.syllableRepeat)!.groups!;
                     (subsubgroups.specialsBefore + subsubgroups.specialsAfter).split("").forEach((ch, k) => {
                         if (k % 2 === 1)
                             return
@@ -179,7 +179,7 @@ export default abstract class AbstractWord {
             })
         }
         else if (groups.baseRepetition !== undefined) {
-            groups.baseRepetition.match(baseRepetitionPattern)?.forEach((subinflexp) => {
+            groups.baseRepetition.match(pattern.baseRepetition)?.forEach((subinflexp) => {
                 let cpy = word.value.map(syll => syll.copy())
                 let willUnshift = false
                 for (let p = 0, q = (groups.baseRepetition!.match(/\+/g) || []).length; p < q; q++)
@@ -199,7 +199,44 @@ export default abstract class AbstractWord {
     }
 
     static _infix (word: AbstractWord, groups: {[key:string]: string}) {
-
+        if (groups.infixPlacement !== undefined) {
+            let a = (groups.infixRest.match(/\./g) || []),
+                n = a.length;
+            if (n > 0)
+                word.value.unshift(new Syllable(), ...a.map(p => new Syllable()))
+            else
+                word.value.unshift(new Syllable())
+            if (groups.infixPlacement === "|" && word.value[n + 1].onset.length > 1)
+                word.value[0].onset.push(word.value[n + 1].onset.shift()!)
+            else if (groups.infixPlacement === "||") {
+                word.value[0].onset = word.value[n + 1].onset
+                word.value[n + 1].onset = []
+            }
+            let i = -1;
+            (groups.infixFirst + groups.infixRest).split(".").forEach((subinflexp) => {
+                i++
+                let subgroups = subinflexp.match(pattern.charactersAndSpecials)!.groups!
+                if (subgroups.main !== "") {
+                    let m = word.syllabifier(subgroups.main)
+                    if (m[0].onset.length > 0)
+                        word.value[i].onset.push(...m[0].onset)
+                    if (m[0].nucleus.length > 0)
+                        word.value[i].nucleus = m[0].nucleus
+                    if (m[0].coda.length > 0)
+                        word.value[i].coda.unshift(...m[0].coda)
+                }
+                let specials = subgroups.specialsBefore + subgroups.specialsAfter
+                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
+                if (s.digits !== undefined)
+                    word.value[i].stress = parseInt(s.digits)
+                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (vl.digits !== undefined)
+                    word.value[i].vowelLength = parseInt(vl.digits)
+                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (t.digits !== undefined)
+                        word.value[i].tone = parseInt(t.digits)
+            })
+        }
     }
 
     static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
@@ -211,7 +248,7 @@ export default abstract class AbstractWord {
     }
 
     inflect (inflexp: string) {
-        let groups = inflexp.match(inflexpPattern)?.groups!
+        let groups = inflexp.match(inflexp)?.groups!
         let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
         let result = this.copy()
         if (groups.precedence !== undefined) {
