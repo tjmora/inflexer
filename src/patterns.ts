@@ -45,3 +45,5 @@ export const syllableRepeat = /(?<specialsBefore>(\$\$|%%|@@)*)(?<main>([1-3]|[4
 export const baseRepetition = /(#\+*=?)|(=?#\+*)/g
 
 export const prefixPush = /(?<placeAfter>_?)(?<dropBefore>!{0,3})(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>!{0,3})/i
+
+export const suffixPush = /(?<dropBefore>!{0,3})(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>!{0,3})(?<placeBefore>_?)/i

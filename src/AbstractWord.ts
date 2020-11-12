@@ -243,7 +243,8 @@ export default abstract class AbstractWord {
         if (groups.prefix !== undefined) {
             let prefx = word.syllabifier(groups.prefix),
                 n = prefx.length;
-            word.value.unshift(...prefx)
+            if (n > 0)
+                word.value.unshift(...prefx)
             let i = n - 1
             groups.prefixPush.split(".").forEach((subinflexp) => {
                 i++
@@ -253,6 +254,13 @@ export default abstract class AbstractWord {
                     word.value[i].onset.shift()
                 else if (subgroups.dropBefore.length === 2)
                     word.value[i].onset = []
+                else
+                    word.value[i] = new Syllable()
+                if (subgroups.dropAfter.length === 0) {}
+                else if (subgroups.dropAfter.length === 1)
+                    word.value[i].coda.pop()
+                else if (subgroups.dropAfter.length === 2)
+                    word.value[i].coda = []
                 else
                     word.value[i] = new Syllable()
                 if (subgroups.placeAfter === "" && subgroups.main !== "") 
@@ -270,11 +278,112 @@ export default abstract class AbstractWord {
                 if (t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
             })
+            if (groups.prefixMagnet !== "") {
+                groups.prefixMagnet.split("~").slice(1).forEach((special) => {
+                    try {
+                        switch (special) {
+                            case "":
+                                let popped = word.value[n].onset.pop()
+                                if (popped !== undefined)
+                                    word.value[n - 1].coda.push(popped)
+                                break
+                            case "$":
+                                word.value[n - 1].stress = word.value[n].stress
+                                word.value[n].stress = 0
+                                break
+                            case "%":
+                                word.value[n - 1].vowelLength = word.value[n].vowelLength
+                                word.value[n].vowelLength = 8
+                                break
+                            case "@":
+                                word.value[n - 1].tone = word.value[n].tone
+                                word.value[n].tone = 0
+                                break
+                            default:
+                        }
+                    }
+                    catch (e) {
+                        throw new Error("Inflexp Magnet Error: ~" + special + " (from " + groups.prefixMagnet + ") failed to take sounds from the next syllable.")
+                    }
+                })
+            }
+            if (groups.prefixMark !== "")
+                word.value[n].postmark = word.specialMarkPlacer()
         }
     }
 
     static _suffix (word: AbstractWord, groups: {[key:string]: string}) {
-
+        if (groups.suffix !== undefined) {
+            let l = word.value.length,
+                sufx = word.syllabifier(groups.suffix),
+                n = sufx.length;
+            if (n > 0)
+                word.value.push(...sufx)
+            let i = l
+            groups.suffixPush.split(".").forEach((subinflexp) => {
+                i--
+                let subgroups = subinflexp.match(pattern.suffixPush)!.groups!
+                if (subgroups.dropBefore.length === 0) {}
+                else if (subgroups.dropBefore.length === 1)
+                    word.value[i].onset.shift()
+                else if (subgroups.dropBefore.length === 2)
+                    word.value[i].onset = []
+                else
+                    word.value[i] = new Syllable()
+                if (subgroups.dropAfter.length === 0) {}
+                else if (subgroups.dropAfter.length === 1)
+                    word.value[i].coda.pop()
+                else if (subgroups.dropAfter.length === 2)
+                    word.value[i].coda = []
+                else
+                    word.value[i] = new Syllable()
+                if (subgroups.placeBefore !== "" && subgroups.main !== "") 
+                    word.value[i].onset.unshift(...word.syllabifier(subgroups.main)[0].nucleus)
+                else if (subgroups.placeBefore === "" && subgroups.main !== "") 
+                    word.value[i].coda.push(...word.syllabifier(subgroups.main)[0].nucleus)
+                let specials = subgroups.specialsBefore + subgroups.specialsAfter
+                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
+                if (s.digits !== undefined)
+                    word.value[i].stress = parseInt(s.digits)
+                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (vl.digits !== undefined)
+                    word.value[i].vowelLength = parseInt(vl.digits)
+                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (t.digits !== undefined)
+                    word.value[i].tone = parseInt(t.digits) 
+            })
+            if (groups.suffixMagnet !== "") {
+                groups.suffixMagnet.split("~").slice(1).forEach((special) => {
+                    try {
+                        switch (special) {
+                            case "":
+                                let popped = word.value[l - 1].coda.pop()
+                                if (popped !== undefined)
+                                    word.value[l].onset.push(popped)
+                                break
+                            case "$":
+                                word.value[l].stress = word.value[l - 1].stress
+                                word.value[l - 1].stress = 0
+                                break
+                            case "%":
+                                word.value[l].vowelLength = word.value[l - 1].vowelLength
+                                word.value[l - 1].vowelLength = 8
+                                break
+                            case "@":
+                                word.value[l].tone = word.value[l - 1].tone
+                                word.value[l - 1].tone = 0
+                                break
+                            default:
+                        }
+                    }
+                    catch (e) {
+                        throw new Error("Inflexp Magnet Error: ~" + special + " (from " + groups.suffixMagnet + ") failed to take sounds from the next syllable.")
+                    }
+                })
+            }
+            if (groups.suffixMark !== "")
+                word.value[l].premark = word.specialMarkPlacer()
+        }
     }
 
     inflect (inflexp: string) {
