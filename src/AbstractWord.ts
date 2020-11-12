@@ -200,10 +200,10 @@ export default abstract class AbstractWord {
 
     static _infix (word: AbstractWord, groups: {[key:string]: string}) {
         if (groups.infixPlacement !== undefined) {
-            let a = (groups.infixRest.match(/\./g) || []),
-                n = a.length;
+            let arr = (groups.infixRest.match(/\./g) || []),
+                n = arr.length;
             if (n > 0)
-                word.value.unshift(new Syllable(), ...a.map(p => new Syllable()))
+                word.value.unshift(new Syllable(), ...arr.map(p => new Syllable()))
             else
                 word.value.unshift(new Syllable())
             if (groups.infixPlacement === "|" && word.value[n + 1].onset.length > 1)
@@ -240,7 +240,37 @@ export default abstract class AbstractWord {
     }
 
     static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
-
+        if (groups.prefix !== undefined) {
+            let prefx = word.syllabifier(groups.prefix),
+                n = prefx.length;
+            word.value.unshift(...prefx)
+            let i = n - 1
+            groups.prefixPush.split(".").forEach((subinflexp) => {
+                i++
+                let subgroups = subinflexp.match(pattern.prefixPush)!.groups!
+                if (subgroups.dropBefore.length === 0) {}
+                else if (subgroups.dropBefore.length === 1)
+                    word.value[i].onset.shift()
+                else if (subgroups.dropBefore.length === 2)
+                    word.value[i].onset = []
+                else
+                    word.value[i] = new Syllable()
+                if (subgroups.placeAfter === "" && subgroups.main !== "") 
+                    word.value[i].onset.unshift(...word.syllabifier(subgroups.main)[0].nucleus)
+                else if (subgroups.placeAfter !== "" && subgroups.main !== "") 
+                    word.value[i].coda.push(...word.syllabifier(subgroups.main)[0].nucleus)
+                let specials = subgroups.specialsBefore + subgroups.specialsAfter
+                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
+                if (s.digits !== undefined)
+                    word.value[i].stress = parseInt(s.digits)
+                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (vl.digits !== undefined)
+                    word.value[i].vowelLength = parseInt(vl.digits)
+                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
+                if (t.digits !== undefined)
+                    word.value[i].tone = parseInt(t.digits) 
+            })
+        }
     }
 
     static _suffix (word: AbstractWord, groups: {[key:string]: string}) {
