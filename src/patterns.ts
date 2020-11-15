@@ -36,7 +36,7 @@ export const inflexp = new RegExp(
 
 export const charactersAndSpecials = /(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)/i
 
-export const rightwardRepetition = /(?<placeAfter>_?)(?<specialMarkBefore>=?)(?<magnetBefore>(~(\$|%|@)?)*)(?<first>(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)(?<rest>(,(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)*)(?<duplicator>\+*)(?<magnetAfter>(~(\$|%|@)?)*)(?<specialMarksAfter>=?)/i
+export const rightwardRepetition = /(?<placeAfter>_?)(?<specialMarkBefore>=?)(?<magnetBefore>(~(\$|%|@)?)*)(?<first>(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)(?<rest>(,(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)*)(?<duplicator>\+*)(?<magnetAfter>(~(\$|%|@)?)*)(?<specialMarkAfter>=?)/i
 
 export const leftwardRepetition = /(?<specialMarkBefore>=?)(?<magnetBefore>(~(\$|%|@)?)*)(?<first>(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)(?<rest>(,(\$\$|%%|@@)*(([1-3]|[4-6]|[7-9]){1,3}|[*]{1,3})(\$\$|%%|@@)*)*)(?<duplicator>\+*)(?<magnetAfter>(~(\$|%|@)?)*)(?<specialMarkAfter>=?)(?<placeBefore>_?)/i
 

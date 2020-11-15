@@ -20,7 +20,7 @@ export default abstract class AbstractWord {
 
     protected abstract syllabifier (word: string): Syllable[]
 
-    protected abstract printer (word: Syllable[]): string
+    protected abstract toString (): string
 
     protected abstract specialMarkPlacer (): string
 
@@ -31,7 +31,7 @@ export default abstract class AbstractWord {
                 : groups.leftwardRepetitionFirst + groups.leftwardRepetitionRest
             let i = groups.rightwardRepetitionFirst !== undefined 
                 ? -1
-                : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 1
+                : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 2
 
             repetitionInflexp.split(":").forEach((subinflexp) => {
                 i++
@@ -43,9 +43,9 @@ export default abstract class AbstractWord {
                 let placeAfter = subgroups.placeAfter !== undefined && subgroups.placeAfter !== ""
                     ? 1 
                     : subgroups.placeBefore !== undefined && subgroups.placeBefore !== ""
-                        ? 0
-                        : 1;
-                if (subgroups.specialMarkBefore !== "")
+                        ? 1
+                        : 0;
+                if (subgroups.specialMarkBefore !== undefined && subgroups.specialMarkBefore !== "")
                     r[j].premark = word.specialMarkPlacer()
                 if (subgroups.magnetBefore !== "") {
                     subgroups.magnetBefore.split("~").slice(1).forEach((special) => {
@@ -94,7 +94,7 @@ export default abstract class AbstractWord {
                                 r[j].tone = word.value[i+j].tone
                                 break
                         }
-                    })
+                    });
                     if (subsubgroups.main !== "") {
                         let temp: string | undefined = ""
                         if (subsubgroups.main.search("1") > -1 || subsubgroups.main === "*" || subsubgroups.main === "**") {
@@ -137,12 +137,14 @@ export default abstract class AbstractWord {
                                 r[j].onset.push(temp)
                         }
                     }
-                    if (subsubgroups.duplicator !== "") {
-                        for (let p = 0, q = subsubgroups.duplicator.length; p < q; p++)
-                            r.splice(r.length, 0, ...r.map(syll => syll.copy()))
-                    }
                     j++
                 })
+                j--
+                if (subgroups.duplicator !== undefined && subgroups.duplicator !== "") {
+                    let orig = r.map(syll => syll.copy())
+                    for (let p = 0, q = subgroups.duplicator.length; p < q; p++)
+                        r.push(...orig.map(syll => syll.copy()))
+                }
                 if (subgroups.magnetAfter !== "") {
                     subgroups.magnetAfter.split("~").slice(1).forEach((special) => {
                         try {
@@ -172,17 +174,18 @@ export default abstract class AbstractWord {
                         }
                     })
                 }
-                if (subgroups.specialMarkAfter !== "")
+                if (subgroups.specialMarkAfter !== undefined && subgroups.specialMarkAfter !== "")
                     r[j].postmark = word.specialMarkPlacer()
                 if (r.length > 0)
                     word.value.splice(i + placeAfter, 0, ...r)
             })
         }
         else if (groups.baseRepetition !== undefined) {
+            let orig = word.value.map(syll => syll.copy())
             groups.baseRepetition.match(pattern.baseRepetition)?.forEach((subinflexp) => {
-                let cpy = word.value.map(syll => syll.copy())
+                let cpy = orig.map(syll => syll.copy())
                 let willUnshift = false
-                for (let p = 0, q = (groups.baseRepetition!.match(/\+/g) || []).length; p < q; q++)
+                for (let p = 0, q = (groups.baseRepetition!.match(/\+/g) || []).length; p < q; p++)
                     cpy.push(...cpy.map(syll => syll.copy()))
                 if (subinflexp.endsWith("=")) {
                     cpy[cpy.length - 1].postmark = word.specialMarkPlacer()
@@ -387,7 +390,7 @@ export default abstract class AbstractWord {
     }
 
     inflect (inflexp: string) {
-        let groups = inflexp.match(inflexp)?.groups!
+        let groups = inflexp.match(pattern.inflexp)?.groups!
         let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
         let result = this.copy()
         if (groups.precedence !== undefined) {

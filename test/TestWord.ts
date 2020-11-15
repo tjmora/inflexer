@@ -82,9 +82,9 @@ export default class TestWord extends AbstractWord {
     }
 
     syllabifier (word: string) {
-        let syll = word.match(/([bcdfghjklmnpqrstvwxyz]*[aeiou]*([bcdfghjklmnpqrstvwxyz](?![aeiou]))*(·(?<!$))?)/gi)
+        let syll = word.match(/([bcdfghjklmnpqrstvwxyz]*[aeiou]*([bcdfghjklmnpqrstvwxyz](?![aeiou]))*(·(?<!$))?)/gi)!
         syll.pop()
-        let result: Syllable[]
+        let result: Syllable[] = []
         let i = -1
         syll.forEach(s => {
             i++
@@ -107,17 +107,18 @@ export default class TestWord extends AbstractWord {
         return result
     }
 
-    printer (word: Syllable[]) {
+    toString (): string {
         let result = ""
-        word.forEach((s) => {
+        this.value.forEach((s) => {
             result += 
                 s.premark
                 + s.onset.join("")
                 + encodeAccent(s) + s.nucleus.slice(1).join("")
                 + s.coda.join("")
                 + s.postmark
+                + "·"
         })
-        return result
+        return result.slice(0, result.length - 1)
     }
 
     specialMarkPlacer () {
