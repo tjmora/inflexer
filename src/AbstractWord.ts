@@ -24,161 +24,232 @@ export default abstract class AbstractWord {
 
     protected abstract specialMarkPlacer (): string
 
+    inflect (inflexp: string) {
+        let groups = inflexp.match(pattern.inflexp)?.groups!
+        let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
+        let result = this.copy()
+        if (groups.precedence !== undefined) {
+            precedence = [];
+            [...groups!.precedence].forEach((ch) => {
+                switch (ch) {
+                    case "r":
+                        precedence.push(AbstractWord._repeat)
+                        break
+                    case "i":
+                        precedence.push(AbstractWord._infix)
+                        break
+                    case "p":
+                        precedence.push(AbstractWord._prefix)
+                        break
+                    case "s":
+                        precedence.push(AbstractWord._suffix)
+                        break
+                    default:
+                }
+            })
+        }
+        precedence.forEach(fn => fn(result, groups))
+        return result
+    }
+
     static _repeat (word: AbstractWord, groups: {[key:string]: string}) {
         if (groups.rightwardRepetitionFirst !== undefined || groups.leftwardRepetitionFirst !== undefined) {
+            let result: Syllable[] = []
             let repetitionInflexp = groups.rightwardRepetitionFirst !== undefined
                 ? groups.rightwardRepetitionFirst + groups.rightwardRepetitionRest
                 : groups.leftwardRepetitionFirst + groups.leftwardRepetitionRest
             let i = groups.rightwardRepetitionFirst !== undefined 
-                ? -1
-                : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 2
+                ? 0
+                : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 1
+
+            if (i > 0)
+                result.push(...word.value.slice(0, i).map(syll => syll.copy()))
 
             repetitionInflexp.split(":").forEach((subinflexp) => {
-                i++
                 let j = 0
-                let r: Syllable[] = [new Syllable()]
-                let subgroups = groups.rightwardRepetitionFirst !== undefined
-                    ? subinflexp.match(pattern.rightwardRepetition)!.groups!
-                    : subinflexp.match(pattern.leftwardRepetition)!.groups!
-                let placeAfter = subgroups.placeAfter !== undefined && subgroups.placeAfter !== ""
-                    ? 1 
-                    : subgroups.placeBefore !== undefined && subgroups.placeBefore !== ""
-                        ? 1
-                        : 0;
-                if (subgroups.specialMarkBefore !== undefined && subgroups.specialMarkBefore !== "")
-                    r[j].premark = word.specialMarkPlacer()
-                if (subgroups.magnetBefore !== "") {
-                    subgroups.magnetBefore.split("~").slice(1).forEach((special) => {
-                        try {
-                            switch (special) {
-                                case "":
-                                    let popped = word.value[i - 1 + placeAfter].coda.pop()
-                                    if (popped !== undefined)
-                                        r[j].onset.push(popped)
+                let k = groups.rightwardRepetitionFirst !== undefined 
+                    ? 0
+                    : ((subinflexp).match(/,/g) || []).length * -1
+                let orig_k = k
+                let r: Syllable[] = []
+                let placeAfter = 0
+                if (subinflexp !== "") {
+                    r.push(new Syllable())
+                    let subgroups = groups.rightwardRepetitionFirst !== undefined
+                        ? subinflexp.match(pattern.rightwardRepetition)!.groups!
+                        : subinflexp.match(pattern.leftwardRepetition)!.groups!
+                    placeAfter = groups.rightwardRepetitionFirst !== undefined
+                        ? subgroups.placeAfter !== undefined && subgroups.placeAfter !== ""
+                            ? 1
+                            : 0
+                        : subgroups.placeBefore !== undefined && subgroups.placeBefore !== ""
+                            ? 0
+                            : 1;
+                    (subgroups.first+subgroups.rest).split(",").forEach((s) => {
+                        if (j > 0)
+                            r.push(new Syllable())
+                        let subsubgroups = s.match(pattern.syllableRepeat)!.groups!;
+                        (subsubgroups.specialsBefore + subsubgroups.specialsAfter).split("").forEach((ch, h) => {
+                            if (h % 2 === 1)
+                                return
+                            switch (ch) {
+                                case "$":
+                                    r[j].stress = word.value[i+k].stress
                                     break
                                 case "$":
-                                    r[j].stress = word.value[i - 1 + placeAfter].stress
-                                    word.value[i - 1 + placeAfter].stress = 0
-                                    break
-                                case "%":
-                                    r[j].vowelLength = word.value[i - 1 + placeAfter].vowelLength
-                                    word.value[i - 1 + placeAfter].vowelLength = 8
+                                    r[j].vowelLength = word.value[i+k].vowelLength
                                     break
                                 case "@":
-                                    r[j].tone = word.value[i - 1 + placeAfter].tone
-                                    word.value[i - 1 + placeAfter].tone = 0
+                                    r[j].tone = word.value[i+k].tone
                                     break
-                                default:
+                            }
+                        });
+                        if (subsubgroups.main !== "") {
+                            let temp: string | undefined = ""
+                            if (subsubgroups.main.search("1") > -1 || subsubgroups.main === "*" || subsubgroups.main === "***") {
+                                r[j].onset = word.value[i+k].onset.map(ch => ch)
+                            }
+                            else if (subsubgroups.main.search("2") > -1) {
+                                if (word.value[i+k].onset.length > 0)
+                                    r[j].onset.push(word.value[i+k].onset[0])
+                            }
+                            else if (subsubgroups.main.search("3") > -1) {
+                                let l = word.value[i+k].onset.length
+                                if (l > 0)
+                                    r[j].onset.push(word.value[i+k].onset[l - 1])
+                            }
+                            if (subsubgroups.main.search("4") > -1 || subsubgroups.main.includes("*")) {
+                                r[j].nucleus = word.value[i+k].nucleus.map(ch => ch)
+                            }
+                            else if (subsubgroups.main.search("5") > -1) {
+                                if (word.value[i+k].nucleus.length > 0)
+                                    r[j].nucleus.push(word.value[i+k].nucleus[0])
+                            }
+                            else if (subsubgroups.main.search("6") > -1) {
+                                let l = word.value[i+k].nucleus.length
+                                if (l > 0)
+                                    r[j].nucleus.push(word.value[i+k].nucleus[l - 1])
+                            }
+                            if (subsubgroups.main.search("7") > -1 || subsubgroups.main === "**" || subsubgroups.main === "***") {
+                                r[j].coda = word.value[i+k].coda.map(ch => ch)
+                            }
+                            else if (subsubgroups.main.search("8") > -1) {
+                                if (word.value[i+k].coda.length > 0)
+                                    r[j].coda.push(word.value[i+k].coda[0])
+                            }
+                            else if (subsubgroups.main.search("9") > -1) {
+                                let l = word.value[i+k].coda.length
+                                if (l > 0)
+                                    r[j].coda.push(word.value[i+k].coda[l - 1])
                             }
                         }
-                        catch (e) {
-                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetBefore + ") failed to take sounds from the earlier syllable.")
-                        }
+                        j++
+                        k++
                     })
-                }
-                (subgroups.first+subgroups.rest).split(",").forEach((s) => {
-                    if (j > 0)
-                        r.push(new Syllable())
-                    let subsubgroups = s.match(pattern.syllableRepeat)!.groups!;
-                    (subsubgroups.specialsBefore + subsubgroups.specialsAfter).split("").forEach((ch, k) => {
-                        if (k % 2 === 1)
-                            return
-                        switch (ch) {
-                            case "$":
-                                r[j].stress = word.value[i+j].stress
-                                break
-                            case "$":
-                                r[j].vowelLength = word.value[i+j].vowelLength
-                                break
-                            case "@":
-                                r[j].tone = word.value[i+j].tone
-                                break
-                        }
-                    });
-                    if (subsubgroups.main !== "") {
-                        let temp: string | undefined = ""
-                        if (subsubgroups.main.search("1") > -1 || subsubgroups.main === "*" || subsubgroups.main === "**") {
-                            r[j].onset = word.value[i+j].onset.map(ch => ch)
-                        }
-                        else if (subsubgroups.main.search("2") > -1) {
-                            temp = word.value[i+j].onset.shift()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
-                        else if (subsubgroups.main.search("3") > -1) {
-                            temp = word.value[i+j].onset.pop()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
-                        if (subsubgroups.main.search("4") > -1 || subsubgroups.main.includes("*")) {
-                            r[j].nucleus = word.value[i+j].nucleus.map(ch => ch)
-                        }
-                        else if (subsubgroups.main.search("5") > -1) {
-                            temp = word.value[i+j].nucleus.shift()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
-                        else if (subsubgroups.main.search("6") > -1) {
-                            temp = word.value[i+j].nucleus.pop()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
-                        if (subsubgroups.main.search("7") > -1 || subsubgroups.main === "**" || subsubgroups.main === "***") {
-                            r[j].coda = word.value[i+j].coda.map(ch => ch)
-                        }
-                        else if (subsubgroups.main.search("8") > -1) {
-                            temp = word.value[i+j].coda.shift()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
-                        else if (subsubgroups.main.search("9") > -1) {
-                            temp = word.value[i+j].coda.pop()
-                            if (temp !== undefined)
-                                r[j].onset.push(temp)
-                        }
+                    j--
+                    if (subgroups.duplicator !== undefined && subgroups.duplicator !== "") {
+                        let orig = r.map(syll => syll.copy())
+                        let q = subgroups.duplicator.length
+                        for (let p = 0; p < q; p++)
+                            r.push(...orig.map(syll => syll.copy()))
+                        j += q
                     }
-                    j++
-                })
-                j--
-                if (subgroups.duplicator !== undefined && subgroups.duplicator !== "") {
-                    let orig = r.map(syll => syll.copy())
-                    for (let p = 0, q = subgroups.duplicator.length; p < q; p++)
-                        r.push(...orig.map(syll => syll.copy()))
-                }
-                if (subgroups.magnetAfter !== "") {
-                    subgroups.magnetAfter.split("~").slice(1).forEach((special) => {
-                        try {
-                            switch (special) {
-                                case "":
-                                    let popped = word.value[i + placeAfter].coda.pop()
-                                    if (popped !== undefined)
-                                        r[j].onset.push(popped)
-                                    break
-                                case "$":
-                                    r[j].stress = word.value[i + placeAfter].stress
-                                    word.value[i - 1 + placeAfter].stress = 0
-                                    break
-                                case "%":
-                                    r[j].vowelLength = word.value[i + placeAfter].vowelLength
-                                    word.value[i - 1 + placeAfter].vowelLength = 8
-                                    break
-                                case "@":
-                                    r[j].tone = word.value[i + placeAfter].tone
-                                    word.value[i - 1 + placeAfter].tone = 0
-                                    break
-                                default:
+                    if (subgroups.specialMarkBefore !== undefined && subgroups.specialMarkBefore !== "")
+                        r[0].premark = word.specialMarkPlacer()
+                    if (subgroups.magnetBefore !== "") {
+                        subgroups.magnetBefore.split("~").slice(1).forEach((special) => {
+                            try {
+                                switch (special) {
+                                    case "":
+                                        let popped = placeAfter === 0
+                                            ? result[result.length - 1].coda.pop()
+                                            : word.value[i].coda.pop()
+                                        if (popped !== undefined)
+                                            r[0].onset.unshift(popped)
+                                        break
+                                    case "$":
+                                        if (placeAfter === 0) {
+                                            r[0].stress = result[result.length - 1].stress
+                                            result[result.length - 1].stress = 0
+                                        }
+                                        else {
+                                            r[0].stress = word.value[i].stress
+                                            word.value[i].stress = 0
+                                        }
+                                        break
+                                    case "%":
+                                        if (placeAfter === 0) {
+                                            r[0].vowelLength = result[result.length - 1].vowelLength
+                                            result[result.length - 1].vowelLength = 8
+                                        }
+                                        else {
+                                            r[0].vowelLength = word.value[i].vowelLength
+                                            word.value[i].vowelLength = 8
+                                        }
+                                        break
+                                    case "@":
+                                        if (placeAfter === 0) {
+                                            r[0].tone = result[result.length - 1].tone
+                                            result[result.length - 1].tone = 0
+                                        }
+                                        else {
+                                            r[0].tone = word.value[i].tone
+                                            word.value[i].tone = 0
+                                        }
+                                        break
+                                    default:
+                                }
                             }
-                        }
-                        catch (e) {
-                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetAfter + ") failed to take sounds from the next syllable.")
-                        }
-                    })
+                            catch (e) {
+                                throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetBefore + ") failed to take sounds from the earlier syllable.")
+                            }
+                        })
+                    }
+                    if (subgroups.magnetAfter !== "") {
+                        subgroups.magnetAfter.split("~").slice(1).forEach((special) => {
+                            try {
+                                switch (special) {
+                                    case "":
+                                        let shifted = word.value[i + placeAfter].onset.shift()
+                                        if (shifted !== undefined)
+                                            r[j].coda.push(shifted)
+                                        break
+                                    case "$":
+                                        r[j].stress = word.value[i + placeAfter].stress
+                                        word.value[i - 1 + placeAfter].stress = 0
+                                        break
+                                    case "%":
+                                        r[j].vowelLength = word.value[i + placeAfter].vowelLength
+                                        word.value[i - 1 + placeAfter].vowelLength = 8
+                                        break
+                                    case "@":
+                                        r[j].tone = word.value[i + placeAfter].tone
+                                        word.value[i - 1 + placeAfter].tone = 0
+                                        break
+                                    default:
+                                }
+                            }
+                            catch (e) {
+                                throw new Error("Inflexp Magnet Error: ~" + special + " (from " + subgroups.magnetAfter + ") failed to take sounds from the next syllable.")
+                            }
+                        })
+                    }
+                    if (subgroups.specialMarkAfter !== undefined && subgroups.specialMarkAfter !== "")
+                        r[j].postmark = word.specialMarkPlacer()
                 }
-                if (subgroups.specialMarkAfter !== undefined && subgroups.specialMarkAfter !== "")
-                    r[j].postmark = word.specialMarkPlacer()
-                if (r.length > 0)
-                    word.value.splice(i + placeAfter, 0, ...r)
+                if (r.length > 0 && placeAfter === 0) {
+                    result.push(...r)
+                    result.push(word.value[i].copy())
+                }
+                else if (r.length > 0 && placeAfter === 1)
+                    result.push(word.value[i].copy(), ...r)
+                else
+                    result.push(word.value[i].copy())
+                i++
             })
+            if (i < word.value.length)
+                result.push(...word.value.slice(i).map(syll => syll.copy()))
+            word.value = result
         }
         else if (groups.baseRepetition !== undefined) {
             let orig = word.value.map(syll => syll.copy())
@@ -387,34 +458,6 @@ export default abstract class AbstractWord {
             if (groups.suffixMark !== "")
                 word.value[l].premark = word.specialMarkPlacer()
         }
-    }
-
-    inflect (inflexp: string) {
-        let groups = inflexp.match(pattern.inflexp)?.groups!
-        let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
-        let result = this.copy()
-        if (groups.precedence !== undefined) {
-            precedence = [];
-            [...groups!.precedence].forEach((ch) => {
-                switch (ch) {
-                    case "r":
-                        precedence.push(AbstractWord._repeat)
-                        break
-                    case "i":
-                        precedence.push(AbstractWord._infix)
-                        break
-                    case "p":
-                        precedence.push(AbstractWord._prefix)
-                        break
-                    case "s":
-                        precedence.push(AbstractWord._suffix)
-                        break
-                    default:
-                }
-            })
-        }
-        precedence.forEach(fn => fn(result, groups))
-        return result
     }
 
 }
