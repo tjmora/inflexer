@@ -88,7 +88,7 @@ export default class TestWord extends AbstractWord {
         let i = 0
         syll.forEach(s => {
             result.push(new Syllable())
-            let onset = (s.match(/^([bcdfghjklmnpqrstvwxyz]+)(?=[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ])/i) || [""])[0]
+            let onset = (s.match(/^([bcdfghjklmnpqrstvwxyz]+)(?=[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]|$)/i) || [""])[0]
             if (onset.length < s.length) {
                 result[i].onset = onset.split("")
                 let nucleusFirst = ""

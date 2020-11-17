@@ -319,10 +319,12 @@ export default abstract class AbstractWord {
                 n = prefx.length;
             if (n > 0)
                 word.value.unshift(...prefx)
-            let i = n - 1
-            groups.prefixPush.split(".").forEach((subinflexp) => {
-                i++
+            let i = n
+            groups.prefixPush.split(".").forEach((subinflexp, j) => {
+                if (j === 0)
+                    return
                 let subgroups = subinflexp.match(pattern.prefixPush)!.groups!
+
                 if (subgroups.dropBefore.length === 0) {}
                 else if (subgroups.dropBefore.length === 1)
                     word.value[i].onset.shift()
@@ -330,6 +332,7 @@ export default abstract class AbstractWord {
                     word.value[i].onset = []
                 else
                     word.value[i] = new Syllable()
+
                 if (subgroups.dropAfter.length === 0) {}
                 else if (subgroups.dropAfter.length === 1)
                     word.value[i].coda.pop()
@@ -337,20 +340,42 @@ export default abstract class AbstractWord {
                     word.value[i].coda = []
                 else
                     word.value[i] = new Syllable()
-                if (subgroups.placeAfter === "" && subgroups.main !== "") 
-                    word.value[i].onset.unshift(...word.syllabifier(subgroups.main)[0].nucleus)
-                else if (subgroups.placeAfter !== "" && subgroups.main !== "") 
-                    word.value[i].coda.push(...word.syllabifier(subgroups.main)[0].nucleus)
-                let specials = subgroups.specialsBefore + subgroups.specialsAfter
-                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
-                if (s.digits !== undefined)
+
+                if (subgroups.placeAfter === "" && subgroups.main !== "") {
+                    let pushed = word.syllabifier(subgroups.main)[0]
+                    if (pushed.hasOnset()) {
+                        word.value[i].onset = pushed.onset
+                        word.value[i].nucleus.unshift(...pushed.nucleus)
+                    }
+                    else
+                        word.value[i].onset.unshift(...pushed.nucleus)
+                }
+                else if (subgroups.placeAfter !== "" && subgroups.main !== "") {
+                    let pushed = word.syllabifier(subgroups.main)[0]
+                    if (pushed.hasCoda()) {
+                        word.value[i].coda = pushed.coda
+                        word.value[i].nucleus.push(...pushed.nucleus)
+                    }
+                    else
+                        word.value[i].coda.push(...pushed.nucleus)
+                }
+
+                let specials = (subgroups.specialsBefore !== undefined
+                                ? subgroups.specialsBefore
+                                : "" )
+                                + (subgroups.specialsAfter  !== undefined
+                                    ? subgroups.specialsAfter
+                                    : "")
+                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)?.groups!
+                if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (vl.digits !== undefined)
+                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (t.digits !== undefined)
+                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                if (t !== undefined && t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
+                i++
             })
             if (groups.prefixMagnet !== "") {
                 groups.prefixMagnet.split("~").slice(1).forEach((special) => {
@@ -382,7 +407,7 @@ export default abstract class AbstractWord {
                 })
             }
             if (groups.prefixMark !== "")
-                word.value[n].postmark = word.specialMarkPlacer()
+                word.value[n - 1].postmark = word.specialMarkPlacer()
         }
     }
 
