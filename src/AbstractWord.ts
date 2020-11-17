@@ -96,7 +96,7 @@ export default abstract class AbstractWord {
                                 case "$":
                                     r[j].stress = word.value[i+k].stress
                                     break
-                                case "$":
+                                case "%":
                                     r[j].vowelLength = word.value[i+k].vowelLength
                                     break
                                 case "@":
@@ -216,15 +216,15 @@ export default abstract class AbstractWord {
                                         break
                                     case "$":
                                         r[j].stress = word.value[i + placeAfter].stress
-                                        word.value[i - 1 + placeAfter].stress = 0
+                                        word.value[i + placeAfter].stress = 0
                                         break
                                     case "%":
                                         r[j].vowelLength = word.value[i + placeAfter].vowelLength
-                                        word.value[i - 1 + placeAfter].vowelLength = 8
+                                        word.value[i + placeAfter].vowelLength = 8
                                         break
                                     case "@":
                                         r[j].tone = word.value[i + placeAfter].tone
-                                        word.value[i - 1 + placeAfter].tone = 0
+                                        word.value[i + placeAfter].tone = 0
                                         break
                                     default:
                                 }

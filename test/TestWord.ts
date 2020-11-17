@@ -4,7 +4,7 @@ import Syllable from "../src/Syllable"
 const vowels = ["a", "e", "i", "o", "u"],
         vowelsGrave = ["à", "è", "ì", "ò", "ù"],
         vowelsAcute = ["á", "é", "í", "ó", "ú"],
-        vowelsBreve = ["ǎ", "ě", "ǐ", "ǒ", "ǔ"],
+        vowelsBreve = ["ă", "ĕ", "ĭ", "ŏ", "ŭ"],
         vowelsArch = ["ȃ", "ȇ", "ȋ", "ȏ", "ȗ"],
         vowelsMacron = ["ā", "ē", "ī", "ō", "ū"],
         vowelsDotBelow = ["ạ", "ẹ", "ị", "ọ", "ụ"],
@@ -69,7 +69,7 @@ function encodeAccent (syllable: Syllable): string {
     else if (syllable.tone === 1)
         return vowelsDotBelow[n]
     else if (syllable.tone === 2)
-        return vowelsMacron[n]
+        return vowelsHook[n]
     else if (syllable.tone === 3)
         return vowelsTilde[n]
     return vowels[n]
@@ -82,14 +82,13 @@ export default class TestWord extends AbstractWord {
     }
 
     syllabifier (word: string) {
-        let syll = word.match(/([bcdfghjklmnpqrstvwxyz]*[aeiou]*([bcdfghjklmnpqrstvwxyz](?![aeiou]))*(·(?<!$))?)/gi)!
+        let syll = word.match(/([bcdfghjklmnpqrstvwxyz]*[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]*([bcdfghjklmnpqrstvwxyz](?![aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]))*(·(?<!$))?)/gi)!
         syll.pop()
         let result: Syllable[] = []
-        let i = -1
+        let i = 0
         syll.forEach(s => {
-            i++
             result.push(new Syllable())
-            let onset = (s.match(/^([bcdfghjklmnpqrstvwxyz]+)(?=[aeiou])/i) || [""])[0]
+            let onset = (s.match(/^([bcdfghjklmnpqrstvwxyz]+)(?=[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ])/i) || [""])[0]
             if (onset.length < s.length) {
                 result[i].onset = onset.split("")
                 let nucleusFirst = ""
@@ -98,11 +97,12 @@ export default class TestWord extends AbstractWord {
                 result[i].vowelLength = decodeVowelLength(nucleusFirst)
                 result[i].tone = decodeTone(nucleusFirst)
                 nucleusFirst = decodeUnaccented(nucleusFirst)
-                result[i].nucleus = [nucleusFirst, ...(s.match(/([aeiou]+)/i) || [" "])[0].split("").slice(1)]
+                result[i].nucleus = [nucleusFirst, ...(s.match(/([aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]+)/i) || [" "])[0].split("").slice(1)]
                 result[i].coda = (s.match(/([bcdfghjklmnpqrstvwxyz]+)(?=·|$)/i) || [""])[0].split("")
             }
             else
                 result[i].nucleus = onset.split("")
+            i++
         })
         return result
     }
