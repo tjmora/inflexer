@@ -320,26 +320,37 @@ export default abstract class AbstractWord {
             if (n > 0)
                 word.value.unshift(...prefx)
             let i = n
+            if (groups.prefixMark !== "")
+                word.value[n - 1].postmark = word.specialMarkPlacer()
             groups.prefixPush.split(".").forEach((subinflexp, j) => {
                 if (j === 0)
                     return
                 let subgroups = subinflexp.match(pattern.prefixPush)!.groups!
-
-                if (subgroups.dropBefore.length === 0) {}
-                else if (subgroups.dropBefore.length === 1)
-                    word.value[i].onset.shift()
-                else if (subgroups.dropBefore.length === 2)
-                    word.value[i].onset = []
-                else
-                    word.value[i] = new Syllable()
-
-                if (subgroups.dropAfter.length === 0) {}
-                else if (subgroups.dropAfter.length === 1)
-                    word.value[i].coda.pop()
-                else if (subgroups.dropAfter.length === 2)
-                    word.value[i].coda = []
-                else
-                    word.value[i] = new Syllable()
+                
+                if (subgroups.placeAfter === "" && subgroups.dropAfter !== "") {
+                    switch (subgroups.dropAfter.length) {
+                        case 1:
+                            word.value[i].onset.shift()
+                            break
+                        case 2:
+                            word.value[i].onset = []
+                            break
+                        case 3:
+                            word.value[i] = new Syllable()
+                    }
+                }
+                else if (subgroups.placeAfter !== "" && subgroups.dropBefore !== "") {
+                    switch (subgroups.dropBefore.length) {
+                        case 1:
+                            word.value[i].coda.pop()
+                            break
+                        case 2:
+                            word.value[i].coda = []
+                            break
+                        case 3:
+                            word.value[i] = new Syllable()
+                    }
+                }
 
                 if (subgroups.placeAfter === "" && subgroups.main !== "") {
                     let pushed = word.syllabifier(subgroups.main)[0]
@@ -353,11 +364,11 @@ export default abstract class AbstractWord {
                 else if (subgroups.placeAfter !== "" && subgroups.main !== "") {
                     let pushed = word.syllabifier(subgroups.main)[0]
                     if (pushed.hasCoda()) {
-                        word.value[i].coda = pushed.coda
+                        word.value[i].coda.unshift(...pushed.coda)
                         word.value[i].nucleus.push(...pushed.nucleus)
                     }
                     else
-                        word.value[i].coda.push(...pushed.nucleus)
+                        word.value[i].coda.unshift(...pushed.nucleus)
                 }
 
                 let specials = (subgroups.specialsBefore !== undefined
@@ -366,15 +377,17 @@ export default abstract class AbstractWord {
                                 + (subgroups.specialsAfter  !== undefined
                                     ? subgroups.specialsAfter
                                     : "")
-                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)?.groups!
+                let s = specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
                 if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                let vl = specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
                 if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                let t = specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
                 if (t !== undefined && t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
+                if (subgroups.specialMark !== "")
+                    word.value[i].postmark = word.specialMarkPlacer()
                 i++
             })
             if (groups.prefixMagnet !== "") {
@@ -406,8 +419,6 @@ export default abstract class AbstractWord {
                     }
                 })
             }
-            if (groups.prefixMark !== "")
-                word.value[n - 1].postmark = word.specialMarkPlacer()
         }
     }
 
@@ -418,38 +429,69 @@ export default abstract class AbstractWord {
                 n = sufx.length;
             if (n > 0)
                 word.value.push(...sufx)
-            let i = l
+            if (groups.suffixMark !== "")
+                word.value[l].premark = word.specialMarkPlacer()
+            let i = l - 1
             groups.suffixPush.split(".").forEach((subinflexp) => {
-                i--
                 let subgroups = subinflexp.match(pattern.suffixPush)!.groups!
-                if (subgroups.dropBefore.length === 0) {}
-                else if (subgroups.dropBefore.length === 1)
-                    word.value[i].onset.shift()
-                else if (subgroups.dropBefore.length === 2)
-                    word.value[i].onset = []
-                else
-                    word.value[i] = new Syllable()
-                if (subgroups.dropAfter.length === 0) {}
-                else if (subgroups.dropAfter.length === 1)
-                    word.value[i].coda.pop()
-                else if (subgroups.dropAfter.length === 2)
-                    word.value[i].coda = []
-                else
-                    word.value[i] = new Syllable()
-                if (subgroups.placeBefore !== "" && subgroups.main !== "") 
-                    word.value[i].onset.unshift(...word.syllabifier(subgroups.main)[0].nucleus)
-                else if (subgroups.placeBefore === "" && subgroups.main !== "") 
-                    word.value[i].coda.push(...word.syllabifier(subgroups.main)[0].nucleus)
+
+                if (subgroups.placeBefore === "" && subgroups.dropBefore !== "") {
+                    switch (subgroups.dropBefore.length) {
+                        case 1:
+                            word.value[i].coda.pop()
+                            break
+                        case 2:
+                            word.value[i].coda = []
+                            break
+                        case 3:
+                            word.value[i] = new Syllable()
+                    }
+                }
+                else if (subgroups.placeBefore !== "" && subgroups.dropAfter !== "") {
+                    switch (subgroups.dropAfter.length) {
+                        case 1:
+                            word.value[i].onset.shift()
+                            break
+                        case 2:
+                            word.value[i].onset = []
+                            break
+                        case 3:
+                            word.value[i] = new Syllable()
+                    }
+                }
+
+                if (subgroups.placeBefore === "" && subgroups.main !== "") {
+                    let pushed = word.syllabifier(subgroups.main)[0]
+                    if (pushed.hasCoda()) {
+                        word.value[i].coda = pushed.coda
+                        word.value[i].nucleus.push(...pushed.nucleus)
+                    }
+                    else
+                        word.value[i].coda.push(...pushed.nucleus)
+                }
+                else if (subgroups.placeBefore !== "" && subgroups.main !== "") {
+                    let pushed = word.syllabifier(subgroups.main)[0]
+                    if (pushed.hasOnset()) {
+                        word.value[i].onset.push(...pushed.onset)
+                        word.value[i].nucleus.unshift(...pushed.nucleus)
+                    }
+                    else
+                        word.value[i].onset.push(...pushed.nucleus)
+                }
+
                 let specials = subgroups.specialsBefore + subgroups.specialsAfter
-                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
-                if (s.digits !== undefined)
+                let s = specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
+                if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (vl.digits !== undefined)
+                let vl = specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
+                if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (t.digits !== undefined)
+                let t = specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
+                if (t !== undefined && t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
+                if (subgroups.specialMark !== "")
+                    word.value[i].premark = word.specialMarkPlacer()
+                i--
             })
             if (groups.suffixMagnet !== "") {
                 groups.suffixMagnet.split("~").slice(1).forEach((special) => {
@@ -480,8 +522,6 @@ export default abstract class AbstractWord {
                     }
                 })
             }
-            if (groups.suffixMark !== "")
-                word.value[l].premark = word.specialMarkPlacer()
         }
     }
 

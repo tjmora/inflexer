@@ -1,9 +1,9 @@
 export const inflexp = new RegExp(
     "("
     + "(?<prefix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
-    + "(?<prefixPush>(\\._?!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3})*)"
-    + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
     + "(?<prefixMark>=?)"
+    + "(?<prefixPush>(\\._?(!{1,3})?((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*(!{1,3})?)*=?)"
+    + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
     + "(?<!^)\\-)?"
     + "("
     + "(?<infixPlacement>(\\|){1,2})"
@@ -24,9 +24,9 @@ export const inflexp = new RegExp(
     + "(?<baseRepetition>((#\\+*=?)|(=?#\\+*))*)"
     + ")?"
     + "(\\-"
-    + "(?<suffixMark>=?)"
     + "(?<suffixMagnet>(~(\\$|%|@)?)*)"
-    + "(?<suffixPush>(!{0,3}((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*!{0,3}_?\\.)*)"
+    + "(?<suffixPush>(=?(!{1,3})?((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*(!{0,3})?_?\\.)*)"
+    + "(?<suffixMark>=?)"
     + "(?<suffix>(((\\$|%|@)[0-9]{1,2})*[^ 0-9*\\-=|.;:,_!~$%@/]*((\\$|%|@)[0-9]{1,2})*))"
     + ")?"
     + "(/"
@@ -44,6 +44,6 @@ export const syllableRepeat = /(?<specialsBefore>(\$\$|%%|@@)*)(?<main>([1-3]|[4
 
 export const baseRepetition = /(#\+*=?)|(=?#\+*)/g
 
-export const prefixPush = /(?<placeAfter>_?)(?<dropBefore>!{0,3})(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>!{0,3})/i
+export const prefixPush = /(?<placeAfter>_?)(?<dropBefore>(!{1,3})?)(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>(!{1,3})?)(?<specialMark>=?)/i
 
-export const suffixPush = /(?<dropBefore>!{0,3})(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>!{0,3})(?<placeBefore>_?)/i
+export const suffixPush = /(?<specialMark>=?)(?<dropBefore>(!{1,3})?)(?<specialsBefore>((\$|%|@)[0-9]{1,2})*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<specialsAfter>((\$|%|@)[0-9]{1,2})*)(?<dropAfter>(!{1,3})?)(?<placeBefore>_?)/i
