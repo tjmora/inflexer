@@ -326,49 +326,35 @@ export default abstract class AbstractWord {
                 if (j === 0)
                     return
                 let subgroups = subinflexp.match(pattern.prefixPush)!.groups!
-                
-                if (subgroups.placeAfter === "" && subgroups.dropAfter !== "") {
-                    switch (subgroups.dropAfter.length) {
+
+                if (subgroups.main !== "") {
+                    let p = word.syllabifier(subgroups.main)[0]
+                    switch (subgroups.drop.length) {
                         case 1:
-                            word.value[i].onset.shift()
-                            break
+                            if (p.hasCoda()) {
+                                word.value[i].onset = []
+                                word.value[i].nucleus = []
+                                word.value[i].coda.shift()
+                            }
+                            else if (p.nucleus.length > 1) {
+                                word.value[i].onset = []
+                                word.value[i].nucleus.shift()
+                            }
+                            else
+                                word.value[i].onset.shift()
+                            break;
                         case 2:
                             word.value[i].onset = []
-                            break
+                            if (p.nucleus.length > 0)
+                                word.value[i].nucleus = []
+                            if (p.hasCoda())
+                                word.value[i].coda = []
+                            break;
                         case 3:
                             word.value[i] = new Syllable()
+                            break;
+                        default:
                     }
-                }
-                else if (subgroups.placeAfter !== "" && subgroups.dropBefore !== "") {
-                    switch (subgroups.dropBefore.length) {
-                        case 1:
-                            word.value[i].coda.pop()
-                            break
-                        case 2:
-                            word.value[i].coda = []
-                            break
-                        case 3:
-                            word.value[i] = new Syllable()
-                    }
-                }
-
-                if (subgroups.placeAfter === "" && subgroups.main !== "") {
-                    let pushed = word.syllabifier(subgroups.main)[0]
-                    if (pushed.hasOnset()) {
-                        word.value[i].onset = pushed.onset
-                        word.value[i].nucleus.unshift(...pushed.nucleus)
-                    }
-                    else
-                        word.value[i].onset.unshift(...pushed.nucleus)
-                }
-                else if (subgroups.placeAfter !== "" && subgroups.main !== "") {
-                    let pushed = word.syllabifier(subgroups.main)[0]
-                    if (pushed.hasCoda()) {
-                        word.value[i].coda.unshift(...pushed.coda)
-                        word.value[i].nucleus.push(...pushed.nucleus)
-                    }
-                    else
-                        word.value[i].coda.unshift(...pushed.nucleus)
                 }
 
                 let specials = (subgroups.specialsBefore !== undefined

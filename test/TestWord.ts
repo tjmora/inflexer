@@ -89,8 +89,8 @@ export default class TestWord extends AbstractWord {
         syll.forEach(s => {
             result.push(new Syllable())
             let onset = (s.match(/^([bcdfghjklmnpqrstvwxyz]+)(?=[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]|$)/i) || [""])[0]
+            result[i].onset = onset.split("")
             if (onset.length < s.length) {
-                result[i].onset = onset.split("")
                 let nucleusFirst = ""
                 nucleusFirst = s.charAt(onset.length).toLowerCase()
                 result[i].stress = decodeStress(nucleusFirst)
@@ -100,8 +100,6 @@ export default class TestWord extends AbstractWord {
                 result[i].nucleus = [nucleusFirst, ...(s.match(/([aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]+)/i) || [" "])[0].split("").slice(1)]
                 result[i].coda = (s.match(/([bcdfghjklmnpqrstvwxyz]+)(?=·|$)/i) || [""])[0].split("")
             }
-            else
-                result[i].nucleus = onset.split("")
             i++
         })
         return result
