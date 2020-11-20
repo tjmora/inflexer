@@ -300,14 +300,14 @@ export default abstract class AbstractWord {
                         word.value[i].coda.unshift(...m[0].coda)
                 }
                 let specials = subgroups.specialsBefore + subgroups.specialsAfter
-                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)!.groups!
-                if (s.digits !== undefined)
+                let s = specials.match(/\$(?<digits>[0-9]{1-2})/i)?.groups!
+                if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (vl.digits !== undefined)
+                let vl = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)!.groups!
-                if (t.digits !== undefined)
+                let t = specials.match(/%(?<digits>[0-9]{1-2})/i)?.groups!
+                if (t !== undefined && t.digits !== undefined)
                         word.value[i].tone = parseInt(t.digits)
             })
         }
@@ -329,47 +329,84 @@ export default abstract class AbstractWord {
 
                 if (subgroups.main !== "") {
                     let p = word.syllabifier(subgroups.main)[0]
+                    if (p.hasCoda()) {
+                        word.value[i].onset = p.onset
+                        word.value[i].nucleus = p.nucleus
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].coda.unshift(...p.coda)
+                                break
+                            case 1:
+                                word.value[i].coda.shift()
+                                word.value[i].coda.unshift(...p.coda)
+                                break
+                            case 2:
+                                word.value[i].coda = p.coda
+                                break
+                            default:
+                                word.value[i] = new Syllable()
+                                word.value[i].coda = p.coda
+                        }
+                    }
+                    else if (p.nucleus.length > 0) {
+                        word.value[i].onset = p.onset
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].nucleus.unshift(...p.nucleus)
+                                break
+                            case 1:
+                                word.value[i].nucleus.shift()
+                                word.value[i].nucleus.unshift(...p.nucleus)
+                                break
+                            case 2:
+                                word.value[i].nucleus = p.nucleus
+                                break
+                            default:
+                                word.value[i] = new Syllable()
+                                word.value[i].nucleus = p.nucleus
+
+                        }
+                    }
+                    else if (p.hasOnset()) {
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].onset.unshift(...p.onset)
+                                break
+                            case 1:
+                                word.value[i].onset.shift()
+                                word.value[i].onset.unshift(...p.onset)
+                                break
+                            case 2:
+                                word.value[i].onset = p.onset
+                                break
+                            default:
+                                word.value[i] = new Syllable
+                                word.value[i].onset = p.onset
+                        }
+                    }
+                }
+                else {
                     switch (subgroups.drop.length) {
                         case 1:
-                            if (p.hasCoda()) {
-                                word.value[i].onset = []
-                                word.value[i].nucleus = []
-                                word.value[i].coda.shift()
-                            }
-                            else if (p.nucleus.length > 1) {
-                                word.value[i].onset = []
-                                word.value[i].nucleus.shift()
-                            }
-                            else
-                                word.value[i].onset.shift()
-                            break;
+                            word.value[i].onset.shift()
+                            break
                         case 2:
                             word.value[i].onset = []
-                            if (p.nucleus.length > 0)
-                                word.value[i].nucleus = []
-                            if (p.hasCoda())
-                                word.value[i].coda = []
-                            break;
+                            break
                         case 3:
                             word.value[i] = new Syllable()
-                            break;
+                            break
                         default:
                     }
                 }
 
-                let specials = (subgroups.specialsBefore !== undefined
-                                ? subgroups.specialsBefore
-                                : "" )
-                                + (subgroups.specialsAfter  !== undefined
-                                    ? subgroups.specialsAfter
-                                    : "")
-                let s = specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
+                let s = subgroups.specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
                 if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
+                let vl = subgroups.specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
                 if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
+                let t = subgroups.specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
                 if (t !== undefined && t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
                 if (subgroups.specialMark !== "")
@@ -418,11 +455,69 @@ export default abstract class AbstractWord {
             if (groups.suffixMark !== "")
                 word.value[l].premark = word.specialMarkPlacer()
             let i = l - 1
-            groups.suffixPush.split(".").forEach((subinflexp) => {
+            groups.suffixPush.split(".").reverse().forEach((subinflexp, j) => {
+                if (j === 0)
+                    return
                 let subgroups = subinflexp.match(pattern.suffixPush)!.groups!
-
-                if (subgroups.placeBefore === "" && subgroups.dropBefore !== "") {
-                    switch (subgroups.dropBefore.length) {
+                if (subgroups.main !== "") {
+                    let s = word.syllabifier(subgroups.main)[0]
+                    if (s.hasOnset() && s.nucleus.length > 0) {
+                        word.value[i].coda = s.coda
+                        word.value[i].nucleus = s.nucleus
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].onset.push(...s.onset)
+                                break
+                            case 1:
+                                word.value[i].onset.pop()
+                                word.value[i].onset.push(...s.onset)
+                                break
+                            case 2:
+                                word.value[i].onset = s.onset
+                                break
+                            default:
+                                word.value[i] = new Syllable()
+                                word.value[i].onset = s.onset
+                        }
+                    }
+                    else if (s.nucleus.length > 0) {
+                        word.value[i].coda = s.coda
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].nucleus.push(...s.nucleus)
+                                break
+                            case 1:
+                                word.value[i].nucleus.pop()
+                                word.value[i].nucleus.push(...s.nucleus)
+                                break
+                            case 2:
+                                word.value[i].nucleus = s.nucleus
+                                break
+                            default:
+                                word.value[i] = new Syllable()
+                                word.value[i].nucleus = s.nucleus
+                        }
+                    }
+                    else if (s.hasOnset() && s.nucleus.length === 0) { // s.onset is actually a coda in this case
+                        switch (subgroups.drop.length) {
+                            case 0:
+                                word.value[i].coda.push(...s.onset)
+                                break
+                            case 1:
+                                word.value[i].coda.pop()
+                                word.value[i].coda.push(...s.onset)
+                                break
+                            case 2:
+                                word.value[i].coda = s.onset
+                                break
+                            default:
+                                word.value[i] = new Syllable()
+                                word.value[i].coda = s.onset
+                        }
+                    }
+                }
+                else {
+                    switch (subgroups.drop.length) {
                         case 1:
                             word.value[i].coda.pop()
                             break
@@ -431,48 +526,18 @@ export default abstract class AbstractWord {
                             break
                         case 3:
                             word.value[i] = new Syllable()
-                    }
-                }
-                else if (subgroups.placeBefore !== "" && subgroups.dropAfter !== "") {
-                    switch (subgroups.dropAfter.length) {
-                        case 1:
-                            word.value[i].onset.shift()
                             break
-                        case 2:
-                            word.value[i].onset = []
-                            break
-                        case 3:
-                            word.value[i] = new Syllable()
+                        default:
                     }
                 }
 
-                if (subgroups.placeBefore === "" && subgroups.main !== "") {
-                    let pushed = word.syllabifier(subgroups.main)[0]
-                    if (pushed.hasCoda()) {
-                        word.value[i].coda = pushed.coda
-                        word.value[i].nucleus.push(...pushed.nucleus)
-                    }
-                    else
-                        word.value[i].coda.push(...pushed.nucleus)
-                }
-                else if (subgroups.placeBefore !== "" && subgroups.main !== "") {
-                    let pushed = word.syllabifier(subgroups.main)[0]
-                    if (pushed.hasOnset()) {
-                        word.value[i].onset.push(...pushed.onset)
-                        word.value[i].nucleus.unshift(...pushed.nucleus)
-                    }
-                    else
-                        word.value[i].onset.push(...pushed.nucleus)
-                }
-
-                let specials = subgroups.specialsBefore + subgroups.specialsAfter
-                let s = specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
+                let s = subgroups.specials.match(/\$(?<digits>[0-9]{1,2})/i)?.groups!
                 if (s !== undefined && s.digits !== undefined)
                     word.value[i].stress = parseInt(s.digits)
-                let vl = specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
+                let vl = subgroups.specials.match(/%(?<digits>[0-9]{1,2})/i)?.groups!
                 if (vl !== undefined && vl.digits !== undefined)
                     word.value[i].vowelLength = parseInt(vl.digits)
-                let t = specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
+                let t = subgroups.specials.match(/@(?<digits>[0-9]{1,2})/i)?.groups!
                 if (t !== undefined && t.digits !== undefined)
                     word.value[i].tone = parseInt(t.digits) 
                 if (subgroups.specialMark !== "")
