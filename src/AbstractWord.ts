@@ -273,7 +273,82 @@ export default abstract class AbstractWord {
     }
 
     static _infix (word: AbstractWord, groups: {[key:string]: string}) {
-        
+        if (groups.rightwardInfix !== undefined) {
+            let subgroups = groups.rightwardInfix.match(pattern.rightwardInfix)!.groups!
+            let j = subgroups.offset.length
+            subgroups.push.split(".").forEach((subinflexp, i) => {
+                let s = subinflexp.match(pattern.rightwardInfixPush)!.groups!
+                let p = word.syllabifier(s.main)
+                if (p.length > 1)
+                    word.value.splice(j + i + 1, 0, ...p.slice(1))
+                switch (subgroups.after) {
+                    case "1":
+                    case "3":
+                        if (p[0].onset.length > 0)
+                            word.value[j + i].onset.push(...p[0].onset)
+                        if (p.length < 2 && !p[0].hasCoda())
+                            word.value[j + i].nucleus.unshift(...p[0].nucleus)
+                        else if (p.length > 1 && !p[0].hasCoda()) {
+                            word.value[j + i + p.length - 1].nucleus.push(...word.value[j + i].nucleus)
+                            word.value[j + i].nucleus = p[0].nucleus
+                        }
+                        else { // if p[0].hasCoda()
+                            word.value.splice(j + i + p.length, 0, new Syllable())
+                            word.value[j + i + p.length].nucleus = word.value[j + i].nucleus
+                            word.value[j + i + p.length].coda = word.value[j + i].coda
+                            word.value[j + i].nucleus = p[0].nucleus
+                            word.value[j + i].coda = p[0].coda
+                            j++
+                        }
+                        break
+                    case "2":
+                        if (p.length < 2 && !p[0].hasCoda()) {
+                            if (word.value[j + i].onset.length > 1)
+                                word.value[j + i].coda.unshift(...word.value[j + i].onset.slice(1))
+                            if (p[0].onset.length > 0)
+                                word.value[j + i].onset.splice(1, word.value[j + i].onset.length, ...p[0].onset)
+                            word.value[j + i].nucleus.unshift(...p[0].nucleus)
+                        }
+                        else if (p.length > 1 && !p[0].hasCoda()) {
+                            if (word.value[j + i].onset.length > 1)
+                                word.value[j + i + p.length - 1].coda.unshift(...word.value[j + i].onset.slice(1))
+                            if (p[0].onset.length > 0)
+                                word.value[j + i].onset.splice(1, word.value[j + i].onset.length, ...p[0].onset)
+                            word.value[j + i + p.length - 1].nucleus.push(...word.value[j + i].nucleus)
+                            word.value[j + i].nucleus = p[0].nucleus
+                        }
+                        else { // if p[0].hasCoda()
+                            word.value.splice(j + i + p.length, 0, new Syllable())
+                            if (word.value[j + i].onset.length > 1)
+                                word.value[j + i + p.length].coda.unshift(...word.value[j + i].onset.slice(1))
+                            if (p[0].onset.length > 0)
+                                word.value[j + i].onset.splice(1, word.value[j + i].onset.length, ...p[0].onset)
+                            word.value[j + i + p.length].nucleus = word.value[j + i].nucleus
+                            word.value[j + i + p.length].coda = word.value[j + i].coda
+                            word.value[j + i].nucleus = p[0].nucleus
+                            word.value[j + i].coda = p[0].coda
+                            j++
+                        }
+                        break
+                    case "4":
+                    case "6":
+
+                        break
+                    case "5":
+
+                        break
+                    case "7":
+                    case "8":
+
+                        break
+                    case "9":
+
+                        break
+                    default:
+                }
+                j += p.length
+            })
+        }
     }
 
     static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
