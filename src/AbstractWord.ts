@@ -284,98 +284,79 @@ export default abstract class AbstractWord {
                     let len = p.length
                     if (len > 1)
                         word.value.splice(cur + 1, 0, ...p.slice(1))
-                    switch (subgroups.after) {
-                        case "1":
-                        case "3":
-                            if (p[0].hasOnset())
-                                    word.value[cur].onset.push(...p[0].onset)
-                            if (len < 2) {
-                                if (!p[0].hasCoda())
-                                    word.value[cur].nucleus.unshift(...p[0].nucleus)
-                                else {
-                                    word.value.splice(cur + 1, 0, new Syllable())
-                                    len++
-                                    word.value[cur + 1].nucleus = word.value[cur].nucleus
-                                    word.value[cur + 1].coda = word.value[cur].coda
-                                    word.value[cur].nucleus = p[0].nucleus
-                                    word.value[cur].coda = p[0].coda
-                                }
-                            }
-                            else {
-                                if (!p[len - 1].hasCoda()) {
-                                    word.value[cur + len - 1].nucleus.push(...word.value[cur].nucleus)
-                                    word.value[cur + len - 1].coda = word.value[cur].coda
-                                }
-                                else {
-                                    word.value.splice(cur + len, 0, new Syllable())
-                                    word.value[cur + len].nucleus = word.value[cur].nucleus
-                                    word.value[cur + len].coda = word.value[cur].coda
-                                    len++
-                                }
-                                word.value[cur].nucleus = p[0].nucleus
-                                if (p[0].hasCoda())
-                                    word.value[cur].coda = p[0].coda
-                            }
-                            break
-                        case "2":
-                            if (word.value[cur].hasMedial()) {
-                                word.value.splice(cur + len, 0, new Syllable)
-                                word.value[cur + len].onset = word.value[cur].onset.slice(1)
-                                word.value[cur + len].nucleus = word.value[cur].nucleus
-                                word.value[cur + len].coda = word.value[cur].coda
-                                if (p[0].onset.length > 0)
-                                    word.value[cur].onset.splice(1, word.value[cur].onset.length, ...p[0].onset)
-                                word.value[cur].nucleus = p[0].nucleus
-                                word.value[cur].coda = p[0].coda
-                                len++
-                            }
-                            else {
-                                if (p[0].hasOnset())
-                                    word.value[cur].onset.push(...p[0].onset)
-                                if (!p[0].hasCoda())
-                                    word.value[cur].nucleus.unshift(...p[0].nucleus)
-                                else {
-                                    word.value.splice(cur + len, 0, new Syllable())
-                                    word.value[cur + len].nucleus = word.value[cur].nucleus
-                                    word.value[cur + len].coda = word.value[cur].coda
-                                    word.value[cur].nucleus = p[0].nucleus
-                                    word.value[cur].coda = p[0].coda
-                                    len++
-                                }
-                            }
-                            break
-                        case "4":
-                        case "6":
-                            if (!p[0].hasOnset()) {
-                                word.value[cur].nucleus.push(...p[0].nucleus)
-                                if (p[0].hasCoda() && len < 2)
-                                    word.value[cur].coda.unshift(...p[0].coda)
-                                else if (p[0].hasCoda()) {
-                                    word.value[cur + len - 1].coda.push(...word.value[cur].coda)
-                                    word.value[cur].coda = p[0].coda
-                                }
-                            }
+                    
+                    if (subgroups.after === "1" || subgroups.after === "3" || 
+                        (subgroups.after === "2" && !word.value[cur].hasMedial())) {
+
+                        if (p[0].hasOnset())
+                                word.value[cur].onset.push(...p[0].onset)
+                        if (len < 2) {
+                            if (!p[0].hasCoda())
+                                word.value[cur].nucleus.unshift(...p[0].nucleus)
                             else {
                                 word.value.splice(cur + 1, 0, new Syllable())
-                                word.value[cur + len].coda.push(...word.value[cur].coda)
-                                word.value[cur].coda = p[0].onset
-                                word.value[cur + 1].nucleus = p[0].nucleus
-                                word.value[cur + 1].coda = p[0].coda
+                                len++
+                                word.value[cur + 1].nucleus = word.value[cur].nucleus
+                                word.value[cur + 1].coda = word.value[cur].coda
+                                word.value[cur].nucleus = p[0].nucleus
+                                word.value[cur].coda = p[0].coda
+                            }
+                        }
+                        else {
+                            if (!p[len - 1].hasCoda()) {
+                                word.value[cur + len - 1].nucleus.push(...word.value[cur].nucleus)
+                                word.value[cur + len - 1].coda = word.value[cur].coda
+                            }
+                            else {
+                                word.value.splice(cur + len, 0, new Syllable())
+                                word.value[cur + len].nucleus = word.value[cur].nucleus
+                                word.value[cur + len].coda = word.value[cur].coda
                                 len++
                             }
-                            break
-                        case "5":
-                            
-                            break
-                        case "7":
-                        case "8":
-
-                            break
-                        case "9":
-
-                            break
-                        default:
+                            word.value[cur].nucleus = p[0].nucleus
+                            if (p[0].hasCoda())
+                                word.value[cur].coda = p[0].coda
+                        }
                     }
+
+                    else if (subgroups.after === "2" && word.value[cur].hasMedial()) {
+                        word.value.splice(cur + len, 0, new Syllable)
+                        word.value[cur + len].onset = word.value[cur].onset.slice(1)
+                        word.value[cur + len].nucleus = word.value[cur].nucleus
+                        word.value[cur + len].coda = word.value[cur].coda
+                        if (p[0].onset.length > 0)
+                            word.value[cur].onset.splice(1, word.value[cur].onset.length, ...p[0].onset)
+                        word.value[cur].nucleus = p[0].nucleus
+                        word.value[cur].coda = p[0].coda
+                        len++
+                    }
+
+                    else if (subgroups.after === "4" || subgroups.after === "6" || 
+                        (subgroups.after === "5" && word.value[cur].nucleus.length < 2)) {
+                    
+                        if (!p[0].hasOnset()) {
+                            word.value[cur].nucleus.push(...p[0].nucleus)
+                            if (p[0].hasCoda() && len < 2)
+                                word.value[cur].coda.unshift(...p[0].coda)
+                            else if (p[0].hasCoda()) {
+                                word.value[cur + len - 1].coda.push(...word.value[cur].coda)
+                                word.value[cur].coda = p[0].coda
+                            }
+                        }
+                        else {
+                            word.value.splice(cur + 1, 0, new Syllable())
+                            word.value[cur + len].coda.push(...word.value[cur].coda)
+                            word.value[cur].coda = p[0].onset
+                            word.value[cur + 1].nucleus = p[0].nucleus
+                            word.value[cur + 1].coda = p[0].coda
+                            len++
+                        }
+                    }
+
+                    else if (subgroups.after === "5" && word.value[cur].nucleus.length > 1) {
+
+                    }
+                    
                     j += len
                 }
             })
