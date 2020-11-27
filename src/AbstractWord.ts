@@ -276,12 +276,31 @@ export default abstract class AbstractWord {
         if (groups.rightwardInfix !== undefined) {
             let subgroups = groups.rightwardInfix.match(pattern.rightwardInfix)!.groups!
             let j = subgroups.offset.length
-            subgroups.push.split(".").forEach((subinflexp, i) => {
+            subgroups.content.split(".").forEach((subinflexp, i) => {
                 let cur = j + i
                 let s = subinflexp.match(pattern.rightwardInfixPush)!.groups!
+                let len = 0
                 if (s.main !== "") {
                     let p = word.syllabifier(s.main)
-                    let len = p.length
+                    len = p.length
+                    switch (s.drop.length) {
+                        case 0:
+                            break
+                        case 1:
+                            if (p[len - 1].hasCoda())
+                                word.value[cur].coda.shift()
+                            else
+                                word.value[cur].nucleus.shift()
+                            break
+                        case 2:
+                            if (p[len - 1].hasCoda())
+                                word.value[cur].coda = []
+                            else
+                                word.value[cur].nucleus = []
+                            break
+                        default:
+                            word.value[cur] = new Syllable()
+                    }
                     if (len > 1)
                         word.value.splice(cur + 1, 0, ...p.slice(1))
                     
@@ -295,11 +314,11 @@ export default abstract class AbstractWord {
                                 word.value[cur].nucleus.unshift(...p[0].nucleus)
                             else {
                                 word.value.splice(cur + 1, 0, new Syllable())
-                                len++
                                 word.value[cur + 1].nucleus = word.value[cur].nucleus
                                 word.value[cur + 1].coda = word.value[cur].coda
                                 word.value[cur].nucleus = p[0].nucleus
                                 word.value[cur].coda = p[0].coda
+                                len++
                             }
                         }
                         else {
@@ -317,6 +336,12 @@ export default abstract class AbstractWord {
                             if (p[0].hasCoda())
                                 word.value[cur].coda = p[0].coda
                         }
+                        word.value[cur + len - 1].stress = word.value[cur].stress
+                        word.value[cur].stress = 0
+                        word.value[cur + len - 1].vowelLength= word.value[cur].vowelLength
+                        word.value[cur].vowelLength = 8
+                        word.value[cur + len - 1].tone = word.value[cur].tone
+                        word.value[cur].tone = 0
                     }
 
                     else if (subgroups.after === "2" && word.value[cur].hasMedial()) {
@@ -329,6 +354,12 @@ export default abstract class AbstractWord {
                         word.value[cur].nucleus = p[0].nucleus
                         word.value[cur].coda = p[0].coda
                         len++
+                        word.value[cur + len - 1].stress = word.value[cur].stress
+                        word.value[cur].stress = 0
+                        word.value[cur + len - 1].vowelLength= word.value[cur].vowelLength
+                        word.value[cur].vowelLength = 8
+                        word.value[cur + len - 1].tone = word.value[cur].tone
+                        word.value[cur].tone = 0
                     }
 
                     else if (subgroups.after === "4" || subgroups.after === "6" || 
@@ -354,10 +385,110 @@ export default abstract class AbstractWord {
                     }
 
                     else if (subgroups.after === "5" && word.value[cur].nucleus.length > 1) {
+                        word.value.splice(cur + len, 0, new Syllable())
+                        word.value[cur + len].nucleus = word.value[cur].nucleus.slice(1)
+                        word.value[cur + len].coda = word.value[cur].coda
+                        if (p[0].hasOnset()) {
+                            word.value[cur].nucleus.splice(1, word.value[cur].nucleus.length)
+                            word.value[cur].coda = p[0].onset
+                            word.value.splice(cur + 1, 0, new Syllable())
+                            word.value[cur + 1].nucleus = p[0].nucleus
+                            word.value[cur + 1].coda = p[0].coda
+                            len++
+                        }
+                        else {
+                            word.value[cur].nucleus.push(...p[0].nucleus)
+                            if (p[0].coda.length > 0)
+                                word.value[cur].coda.unshift(...p[0].coda)
+                        }
+                        len++
+                        word.value[cur + len - 1].stress = word.value[cur].stress
+                        word.value[cur].stress = 0
+                        word.value[cur + len - 1].vowelLength= word.value[cur].vowelLength
+                        word.value[cur].vowelLength = 8
+                        word.value[cur + len - 1].tone = word.value[cur].tone
+                        word.value[cur].tone = 0
+                    }
 
+                    else if (subgroups.after === "7" || subgroups.after === "9" || 
+                        (subgroups.after === "8" && word.value[cur].coda.length < 2)) {
+
+                        if (p[0].hasOnset())
+                            word.value[cur].coda.push(...p[0].coda)
+                        word.value.splice(cur + 1, 0, new Syllable())
+                        word.value[cur + 1].nucleus = p[0].nucleus
+                        word.value[cur + 1].coda = p[0].coda
+                        len++
+                    }
+
+                    else if (subgroups.after === "8" && word.value[cur].coda.length > 1) {
+                        word.value[cur + len].coda.push(...word.value[cur].coda.slice(1))
+                        word.value[cur].coda.splice(1, word.value[cur].coda.length)
+                        if (p[0].hasOnset())
+                            word.value[cur].coda.push(...p[0].coda)
+                        word.value.splice(cur + 1, 0, new Syllable())
+                        word.value[cur + 1].nucleus = p[0].nucleus
+                        word.value[cur + 1].coda = p[0].coda
+                        len++
                     }
                     
                     j += len
+                }
+                if (s.magnetBefore !== "") {
+                    s.magnetBefore.split("~").slice(1).forEach((special) => {
+                        try {
+                            switch (special) {
+                                case "":
+                                    if (word.value[cur - 1].coda.length > 0)
+                                        word.value[cur].onset.unshift(word.value[cur - 1].coda.pop()!)
+                                    break
+                                case "$":
+                                    word.value[cur].stress = word.value[cur - 1].stress
+                                    word.value[cur - 1].stress = 0
+                                    break
+                                case "%":
+                                    word.value[cur].vowelLength = word.value[cur - 1].vowelLength
+                                    word.value[cur - 1].vowelLength = 8
+                                    break
+                                case "@":
+                                    word.value[cur].tone = word.value[cur - 1].tone
+                                    word.value[cur - 1].tone = 0
+                                    break
+                                default:
+                            }
+                        }
+                        catch (e) {
+                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + s.magnetBefore + ") failed to take sounds from the earlier syllable.")
+                        }
+                    })
+                }
+                if (s.magnetAfter !== "") {
+                    s.magnetAfter.split("~").slice(1).forEach((special) => {
+                        try {
+                            switch (special) {
+                                case "":
+                                    if (word.value[cur + len - 1].hasOnset())
+                                        word.value[cur + len - 2].coda.push(word.value[cur + len - 1].onset.shift()!)
+                                    break
+                                case "$":
+                                    word.value[cur + len - 2].stress = word.value[cur + len - 1].stress
+                                    word.value[cur + len - 1].stress = 0
+                                    break
+                                case "%":
+                                    word.value[cur + len - 2].vowelLength = word.value[cur + len - 1].vowelLength
+                                    word.value[cur + len - 1].vowelLength = 8
+                                    break
+                                case "@":
+                                    word.value[cur + len - 2].tone = word.value[cur + len - 1].tone
+                                    word.value[cur + len - 1].tone = 0
+                                    break
+                                default:
+                            }
+                        }
+                        catch (e) {
+                            throw new Error("Inflexp Magnet Error: ~" + special + " (from " + s.magnetAfter + ") failed to take sounds from the next syllable.")
+                        }
+                    })
                 }
             })
         }
