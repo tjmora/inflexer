@@ -6,9 +6,9 @@ export const inflexp = new RegExp(
     + "(?<prefixMagnet>(~(\\$|%|@)?)*)"
     + "(?<!^)\\-)?"
     + "(\\|("
-    + "(?<rightwardInfix>\\.*[1-9](((~(\\$|%|@)?)*[^ 0-9*\\-=|.;:,_!~$%@/]*(!{1,3})?(~(\\$|%|@)?)*)(?=\\.|\\|)(\\.?))*)"
+    + "(?<rightwardInfix>\\.*[1-9](((~(\\$|%|@)?)*[^ 0-9*\\-=|.;:,_!~$%@/]*(~(\\$|%|@)?)*)(?=\\.|\\!|\\|)(\\.?))*(!{1,3})?)"
     + "|"
-    + "(?<leftwardInfix>((\\.?)(?<=\\||\\.)((~(\\$|%|@)?)*(!{1,3})?[^ 0-9*\\-=|.;:,_!~$%@/]*(~(\\$|%|@)?)*))*[0-9]\\.*)"
+    + "(?<leftwardInfix>(!{1,3})?((\\.?)(?<=\\||\\!|\\.)((~(\\$|%|@)?)*[^ 0-9*\\-=|.;:,_!~$%@/]*(~(\\$|%|@)?)*))*[0-9]\\.*)"
     + ")\\|)?"
     + "("
     + "("
@@ -48,10 +48,10 @@ export const prefixPush = /(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<drop>(!{1,3})?)(?
 
 export const suffixPush = /(?<specialMark>=?)(?<specials>((\$|%|@)[0-9]{1,2})*)(?<drop>(!{1,3})?)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)/i
 
-export const rightwardInfix = /(?<offset>\.*)(?<after>[1-9])(?<content>(((~(\$|%|@)?)*[^ 0-9*\-=|.;:,_!~$%@/]*(!{1,3})?(~(\$|%|@)?)*)(?=\.|$)(\.?))*)/i
+export const rightwardInfix = /(?<offset>\.*)(?<after>[1-9])(?<content>(((~(\$|%|@)?)*[^ 0-9*\-=|.;:,_!~$%@/]*(~(\$|%|@)?)*)(?=\.|\!|$)(\.?))*)(?<drop>(!{1,3})?)/i
 
-export const rightwardInfixPush = /(?<magnetBefore>(~(\$|%|@)?)*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<drop>(!{1,3})?)(?<magnetAfter>(~(\$|%|@)?)*)/i
+export const rightwardInfixContent = /(?<magnetBefore>(~(\$|%|@)?)*)[^ 0-9*\-=|.;:,_!~$%@/]*(?<magnetAfter>(~(\$|%|@)?)*)/i
 
-export const leftwardInfix = /(?<content>((\.?)(?<=^|\.)((~(\$|%|@)?)*(!{1,3})?[^ 0-9*\-=|.;:,_!~$%@/]*(~(\$|%|@)?)*))*)(?<before>[0-9])(?<offset>\.*)/i
+export const leftwardInfix = /(?<drop>(!{1,3})?)(?<content>((\.?)(?<=^|\!|\.)((~(\$|%|@)?)*[^ 0-9*\-=|.;:,_!~$%@/]*(~(\$|%|@)?)*))*)(?<before>[0-9])(?<offset>\.*)/i
 
-export const leftwardInfixPush = /(?<magnetBefore>(~(\$|%|@)?)*)(?<drop>(!{1,3})?)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<magnetAfter>(~(\$|%|@)?)*)/i
+export const leftwardInfixContent = /(?<magnetBefore>(~(\$|%|@)?)*)[^ 0-9*\-=|.;:,_!~$%@/]*(?<magnetAfter>(~(\$|%|@)?)*)/i
