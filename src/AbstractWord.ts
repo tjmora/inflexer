@@ -324,7 +324,7 @@ export default abstract class AbstractWord {
                     }
                     break
                 default:
-                    if (len > 1) {
+                    if (len > 1 || (p[0].hasOnset() && after > 3)) {
                         if (p[len - 1].hasCoda()) {
                             if (after < 7 && (after !== 5 || word.value[offset].nucleus.length < 2))
                                 word.value[offset].coda = []
@@ -442,18 +442,11 @@ export default abstract class AbstractWord {
             }
 
             else if (after === 5 && word.value[offset].nucleus.length > 1) {
-                if (p[len - 1].hasCoda()) {
-                    word.value.splice(offset + len, 0, new Syllable())
-                    word.value[offset + len].nucleus = word.value[offset].nucleus.slice(1)
-                    word.value[offset + len].coda = word.value[offset].coda
-                    len++
-                }
-                else {
-                    word.value[offset + len - 1].nucleus.push(...word.value[offset].nucleus.slice(1))
-                    word.value[offset + len - 1].coda = word.value[offset].coda
-                }
+                let movedNucleus = word.value[offset].nucleus.slice(1)
+                let movedCoda = word.value[offset].coda
+                word.value[offset].nucleus.splice(1, word.value[offset].nucleus.length)
+                word.value[offset].coda = []
                 if (p[0].hasOnset()) {
-                    word.value[offset].nucleus.splice(1, word.value[offset].nucleus.length)
                     word.value[offset].coda = p[0].onset
                     word.value.splice(offset + 1, 0, new Syllable())
                     word.value[offset + 1].nucleus = p[0].nucleus
@@ -461,8 +454,18 @@ export default abstract class AbstractWord {
                     len++
                 }
                 else {
-                    word.value[offset].nucleus.splice(1, word.value[offset].nucleus.length, ...p[0].nucleus)
+                    word.value[offset].nucleus.push(...p[0].nucleus)
                     word.value[offset].coda = p[0].coda
+                }
+                if (p[p.length - 1].hasCoda()) {
+                    word.value.splice(offset + len, 0, new Syllable())
+                    word.value[offset + len].nucleus = movedNucleus
+                    word.value[offset + len].coda = movedCoda
+                    len++
+                }
+                else {
+                    word.value[offset + len - 1].nucleus.push(...movedNucleus)
+                    word.value[offset + len - 1].coda = movedCoda
                 }
             }
 
