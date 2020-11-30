@@ -473,28 +473,34 @@ export default abstract class AbstractWord {
                 (after === 8 && word.value[offset].coda.length < 2)) {
 
                 if (p[0].hasOnset())
-                    word.value[offset].coda.push(...p[0].coda)
-                word.value.splice(offset + 1, 0, new Syllable())
-                word.value[offset + 1].nucleus = p[0].nucleus
-                word.value[offset + 1].coda = p[0].coda
-                len++
+                    word.value[offset].coda.push(...p[0].onset)
+                if (p[0].nucleus.length > 0) {
+                    word.value.splice(offset + 1, 0, new Syllable())
+                    word.value[offset + 1].nucleus = p[0].nucleus
+                    word.value[offset + 1].coda = p[0].coda
+                    len++
+                }
             }
 
             else if (after === 8 && word.value[offset].coda.length > 1) {
-                if (p[0].hasOnset())
-                    word.value[offset].coda.push(...p[0].coda)
-                word.value.splice(offset + 1, 0, new Syllable())
-                len++
+                if (p[0].nucleus.length > 0) {
+                    word.value.splice(offset + 1, 0, new Syllable())
+                    len++
+                }
                 word.value[offset + len - 1].coda.push(...word.value[offset].coda.slice(1))
                 word.value[offset].coda.splice(1, word.value[offset].coda.length)
-                word.value[offset + 1].nucleus = p[0].nucleus
-                if (p[0].coda.length > 0)
-                    word.value[offset + 1].coda.unshift(...p[0].coda)
+                if (p[0].nucleus.length > 0) {
+                    if (p[0].hasOnset())
+                        word.value[offset].coda.push(...p[0].onset)
+                    word.value[offset + 1].nucleus = p[0].nucleus
+                    if (p[0].coda.length > 0)
+                        word.value[offset + 1].coda.unshift(...p[0].coda)
+                }
             }
 
             subgroups.content.split(".").forEach((subinflexp, i) => {
                 let j = offset + i
-                if (!p[0].hasOnset() && after > 6)
+                if (after > 6 && !p[0].hasOnset() && p[0].nucleus.length > 0)
                     j++
                 let s = subinflexp.match(pattern.rightwardInfixContent)!.groups!
                 if (s.magnetBefore !== "") {
