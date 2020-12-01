@@ -39,8 +39,20 @@ export default class Syllable {
         return this.coda.length > 0
     }
 
+    hasCodaCluster () {
+        return this.coda.length > 1
+    }
+
     hasMedial () {
         return this.onset.length > 1
+    }
+
+    hasNucleus () {
+        return this.nucleus.length > 0
+    }
+
+    hasMultiphthong () {
+        return this.nucleus.length > 1
     }
 
     hasOnset () {
