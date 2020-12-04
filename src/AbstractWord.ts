@@ -365,75 +365,86 @@ export default abstract class AbstractWord {
                         break
                     case 2:
                     case 1:
-                        // do nothing
+                        latter.unshift(word.value.pop()!)
                         break
                     default:
                 }
             }
+            let isPrefix = word.value.length === 0 ? true : false
             word.value.push(...infx)
-            if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
-                if (infx[0].hasOnset()) {
-                    if (subgroups.drop === "!" && !rightward)
-                        word.value[offset].onset.pop()
-                    else if ((subgroups.drop === "!!" || subgroups.drop === "!!!") && !rightward)
-                        word.value[offset].onset = []
-                    word.value[offset].onset.push(...infx[0].onset)
-                    word.value[offset + 1].onset = []
-                }
-                if (infx[0].hasNucleus()) {
-                    word.value[offset].nucleus = infx[0].nucleus
-                    word.value[offset].stress= infx[0].stress
-                    word.value[offset].vowelLength = infx[0].vowelLength
-                    word.value[offset].tone = infx[0].tone
-                    word.value[offset + 1].nucleus = []
-                }
-                if (infx[0].hasCoda())
-                    word.value[offset].coda = infx[0].coda
-            }
-            else if (word.value[offset].hasNucleus() && !word.value[offset].hasCoda()) {
-                if (infx[0].hasOnset()) {
-                    word.value[offset].coda = infx[0].onset
-                    word.value[offset + 1].onset = []
-                }
-                else if (infx[0].hasNucleus()) {
-                    if (subgroups.drop === "!" && !rightward)
-                        word.value[offset].nucleus.pop()
-                    else if (subgroups.drop === "!!" && !rightward)
-                        word.value[offset].nucleus = []
-                    else if (subgroups.drop === "!!!" && !rightward) {
-                        word.value[offset].onset = []
-                        word.value[offset].nucleus = []
+            if (!isPrefix) {
+                if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
+                    if (infx[0].hasOnset()) {
+                        if (subgroups.drop === "!" && !rightward)
+                            word.value[offset].onset.pop()
+                        else if ((subgroups.drop === "!!" || subgroups.drop === "!!!") && !rightward)
+                            word.value[offset].onset = []
+                        word.value[offset].onset.push(...infx[0].onset)
+                        word.value[offset + 1].onset = []
                     }
-                    word.value[offset].nucleus.push(...infx[0].nucleus)
-                    word.value[offset + 1].nucleus = []
-                    if (infx[0].hasCoda())
+                    if (infx[0].hasNucleus()) {
+                        word.value[offset].nucleus = infx[0].nucleus
+                        word.value[offset].stress= infx[0].stress
+                        word.value[offset].vowelLength = infx[0].vowelLength
+                        word.value[offset].tone = infx[0].tone
+                        word.value[offset + 1].nucleus = []
+                    }
+                    if (infx[0].hasCoda() && rightward)
                         word.value[offset].coda = infx[0].coda
+                    else if (infx[0].hasCoda() && !rightward)
+                        latter[0].onset.unshift(...infx[0].coda)
                 }
-                else if (infx[0].hasCoda()) {
-                    word.value[offset].coda = infx[0].coda
-                }
-            }
-            else if (word.value[offset].hasCoda()) {
-                if (infx[0].hasOnset() && rightward) {
-                    word.value[offset].coda.push(...infx[0].onset)
-                    word.value[offset + 1].onset = []
-                }
-                else if (!infx[0].hasNucleus() && infx[0].hasCoda()) {
-                    if (subgroups.drop === "!" && !rightward)
-                        word.value[offset].coda.pop()
-                    else if (subgroups.drop === "!!" && !rightward)
-                        word.value[offset].coda = []
-                    else if (subgroups.drop === "!!!" && !rightward) {
-                        word.value[offset].onset = []
-                        word.value[offset].nucleus = []
-                        word.value[offset].coda = []
+                else if (word.value[offset].hasNucleus() && !word.value[offset].hasCoda()) {
+                    if (infx[0].hasOnset()) {
+                        if (rightward) {
+                            word.value[offset].coda = infx[0].onset
+                            word.value[offset + 1].onset = []
+                        }
                     }
-                    word.value[offset].coda.push(...infx[0].coda)
+                    else if (infx[0].hasNucleus()) {
+                        if (subgroups.drop === "!" && !rightward)
+                            word.value[offset].nucleus.pop()
+                        else if (subgroups.drop === "!!" && !rightward)
+                            word.value[offset].nucleus = []
+                        else if (subgroups.drop === "!!!" && !rightward) {
+                            word.value[offset].onset = []
+                            word.value[offset].nucleus = []
+                        }
+                        word.value[offset].nucleus.push(...infx[0].nucleus)
+                        word.value[offset + 1].nucleus = []
+                        if (infx[0].hasCoda() && rightward)
+                            word.value[offset].coda = infx[0].coda
+                        else if (infx[0].hasCoda() && !rightward)
+                            latter[0].onset.unshift(...infx[0].coda)
+                    }
+                    else if (infx[0].hasCoda()) {
+                        word.value[offset].coda = infx[0].coda
+                    }
                 }
-            }
-            if (!word.value[offset + 1].hasNucleus()) {
-                word.value.splice(offset + 1, 1)
-                len--
+                else if (word.value[offset].hasCoda()) {
+                    if (infx[0].hasOnset()) {
+                        if (rightward) {
+                            word.value[offset].coda.push(...infx[0].onset)
+                            word.value[offset + 1].onset = []
+                        }
+                    }
+                    else if (!infx[0].hasNucleus() && infx[0].hasCoda()) {
+                        if (subgroups.drop === "!" && !rightward)
+                            word.value[offset].coda.pop()
+                        else if (subgroups.drop === "!!" && !rightward)
+                            word.value[offset].coda = []
+                        else if (subgroups.drop === "!!!" && !rightward) {
+                            word.value[offset].onset = []
+                            word.value[offset].nucleus = []
+                            word.value[offset].coda = []
+                        }
+                        word.value[offset].coda.push(...infx[0].coda)
+                    }
+                }
+                if (!word.value[offset + 1].hasNucleus()) {
+                    word.value.splice(offset + 1, 1)
+                    len--
+                }
             }
             let end = word.value.length - 1
             if (word.value[end].hasOnset() && !word.value[end].hasNucleus()) {
@@ -473,12 +484,23 @@ export default abstract class AbstractWord {
                     if (subgroups.drop !== "!!!" || !rightward)
                         word.value[end].coda = latter[0].coda
                 }
+                else if (latter[0].hasOnset() && !latter[0].hasNucleus()) {
+                    word.value[end].coda = latter[0].onset
+                    if (latter[0].hasCoda())
+                        word.value[end].coda.push(...latter[0].coda)
+                }
             }
-            else if (word.value[end].hasCoda() && !latter[0].hasNucleus() && latter[0].hasCoda()) {
-                if (subgroups.drop === "" || !rightward)
-                    word.value[end].coda.push(...latter[0].coda)
-                else if (subgroups.drop === "!" && rightward)
-                    word.value[end].coda.push(...latter[0].coda.slice(1))
+            else if (word.value[end].hasCoda()) {
+                if (!latter[0].hasNucleus() && latter[0].hasCoda()) {
+                    if (subgroups.drop === "" || !rightward)
+                        word.value[end].coda.push(...latter[0].coda)
+                    else if (subgroups.drop === "!" && rightward)
+                        word.value[end].coda.push(...latter[0].coda.slice(1))
+                }
+                else if (!rightward) {
+                    latter[0].onset.unshift(...word.value[end].coda)
+                    word.value[end].coda = []
+                }
             }
             if (!latter[0].hasNucleus()) {
                 latter.shift()
