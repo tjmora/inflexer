@@ -50,8 +50,6 @@ export const suffixPush = /(?<specialMark>=?)(?<specials>((\$|%|@)[0-9]{1,2})*)(
 
 export const rightwardInfix = /(?<offset>\.*)(?<after>[1-9])(?<content>(((~(\$|%|@)?)*[^ 0-9*\-=|.;:,_!~$%@/]*(~(\$|%|@)?)*)(?=\.|\!|$)(\.?))*)(?<drop>(!{1,3})?)/i
 
-export const rightwardInfixContent = /(?<magnetBefore>(~(\$|%|@)?)*)[^ 0-9*\-=|.;:,_!~$%@/]*(?<magnetAfter>(~(\$|%|@)?)*)/i
-
 export const leftwardInfix = /(?<drop>(!{1,3})?)(?<content>((\.?)(?<=^|\!|\.)((~(\$|%|@)?)*[^ 0-9*\-=|.;:,_!~$%@/]*(~(\$|%|@)?)*))*)(?<before>[0-9])(?<offset>\.*)/i
 
-export const leftwardInfixContent = /(?<magnetBefore>(~(\$|%|@)?)*)[^ 0-9*\-=|.;:,_!~$%@/]*(?<magnetAfter>(~(\$|%|@)?)*)/i
+export const infixContent = /(?<magnetBefore>(~(\$|%|@)?)*)(?<main>[^ 0-9*\-=|.;:,_!~$%@/]*)(?<magnetAfter>(~(\$|%|@)?)*)/i

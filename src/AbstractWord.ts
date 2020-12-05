@@ -427,6 +427,10 @@ export default abstract class AbstractWord {
                             word.value[offset].coda.push(...infx[0].onset)
                             word.value[offset + 1].onset = []
                         }
+                        else {
+                            word.value[offset + 1].onset.unshift(...word.value[offset].coda)
+                            word.value[offset].coda = []
+                        }
                     }
                     else if (!infx[0].hasNucleus() && infx[0].hasCoda()) {
                         if (subgroups.drop === "!" && !rightward)
@@ -509,9 +513,14 @@ export default abstract class AbstractWord {
             word.value.push(...latter)
             subgroups.content.split(".").forEach((subinflexp, i) => {
                 let j = offset + i
-                if (digit > 6 && !infx[0].hasOnset() && infx[0].hasNucleus())
+                if ((rightward && digit > 6 && !infx[0].hasOnset() && infx[0].hasNucleus())
+                    || (!rightward && digit < 4 && infx[0].hasOnset() && infx[0].hasNucleus()))
                     j++
-                let s = subinflexp.match(pattern.rightwardInfixContent)!.groups!
+                let s = subinflexp.match(pattern.infixContent)!.groups!
+                if (!rightward && s.magnetBefore !== "" && s.main === "") {
+                    s.magnetAfter = s.magnetBefore
+                    s.magnetBefore = ""
+                }
                 if (s.magnetBefore !== "") {
                     s.magnetBefore.split("~").slice(1).forEach((special) => {
                         try {
@@ -536,6 +545,7 @@ export default abstract class AbstractWord {
                             }
                         }
                         catch (e) {
+                            console.log(word.value)
                             throw new Error("Inflexp Magnet Error: ~" + special + " (from " + s.magnetBefore + ") failed to take sounds from the earlier syllable.")
                         }
                     })
