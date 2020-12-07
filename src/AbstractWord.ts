@@ -274,7 +274,183 @@ export default abstract class AbstractWord {
     }
 
     static _infix (word: AbstractWord, groups: {[key:string]: string}) {
-        
+        if (groups.rightwardInfix !== undefined) {
+            let subgroups = groups.rightwardInfix.match(pattern.rightwardInfix)!.groups!,
+                offset = subgroups.offset.length,
+                after = parseInt(subgroups.after),
+                infx: Syllable[] = [];
+            subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(s => {
+                if (s !== "")
+                    infx.push(...word.syllabifier(s))
+            })
+            let n = infx.length
+            switch (after) {
+                case 1:
+                case 3:
+                    word.value.splice(offset, 0, new Syllable())
+                    word.value[offset].onset = word.value[offset + 1].onset
+                    word.value[offset + 1].onset = []
+                    break
+                case 2:
+                    word.value.splice(offset, 0, new Syllable())
+                    word.value[offset].onset = [word.value[offset + 1].onset.shift()!]
+                    if (word.value[offset].onset[0] === undefined)
+                        word.value[offset].onset = []
+                    break
+                case 4:
+                case 6:
+                    word.value.splice(offset + 1, 0, new Syllable())
+                    word.value[offset + 1].coda = word.value[offset].coda
+                    word.value[offset].coda = []
+                    break
+                case 5:
+                    word.value.splice(offset + 1, 0, new Syllable())
+                    if (word.value[offset].hasMultiphthong()) {
+                        word.value[offset + 1].nucleus = word.value[offset].nucleus.slice(1)
+                        word.value[offset].nucleus.splice(1, word.value[offset].nucleus.length)
+                    }
+                    word.value[offset + 1].coda = word.value[offset].coda
+                    word.value[offset].coda = []
+                    break
+                case 7:
+                case 9:
+                    // do nothing
+                    break
+                case 8:
+                    if (word.value[offset].hasCodaCluster()) {
+                        word.value.splice(offset + 1, 0, new Syllable())
+                        word.value[offset + 1].coda = word.value[offset].coda.slice(1)
+                        word.value[offset].coda.splice(1, word.value[offset].coda.length)
+                    }
+                    break
+                default:
+            }
+            word.value.splice(offset + 1, 0, ...infx)
+            if (word.value[offset + 1].hasOnset()) {
+                if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
+                    word.value[offset + 1].onset.unshift(...word.value[offset].onset)
+                    word.value.splice(offset, 1)
+                    n--
+                }
+            }
+            else if (word.value[offset + 1].hasNucleus()) {
+                if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
+                    word.value[offset + 1].onset = word.value[offset].onset
+                    word.value.splice(offset, 1)
+                    n--
+                }
+                else if (word.value[offset].hasNucleus() && !word.value[offset].hasCoda()) {
+                    word.value[offset].nucleus.push(...word.value[offset + 1].nucleus)
+                    word.value[offset].coda = word.value[offset + 1].coda
+                    word.value.splice(offset + 1, 1)
+                    n--
+                }
+            }
+            if ((offset + n) < word.value.length) {
+                if (word.value[offset + n].hasOnset() && !word.value[offset + n].hasNucleus()) {
+                    if (subgroups.drop === "!")
+                        word.value[offset + n + 1].onset.shift()
+                    else if (subgroups.drop === "!!" || subgroups.drop === "!!!")
+                        word.value[offset + n + 1].onset = []
+                    if (subgroups.drop === "!!!") {
+                        word.value[offset + n + 1].nucleus = []
+                        word.value[offset + n + 1].coda = []
+                    }
+                    word.value[offset + n + 1].onset.unshift(...word.value[offset + n].onset)
+                    word.value.splice(offset + n, 1)
+                }
+                else if (word.value[offset + n].hasNucleus() && !word.value[offset + n].hasCoda()) {
+                    if (!word.value[offset + n + 1].hasOnset()) {
+                        if (subgroups.drop === "!")
+                            word.value[offset + n + 1].nucleus.shift()
+                        else if (subgroups.drop === "!!" || subgroups.drop === "!!!")
+                            word.value[offset + n + 1].nucleus = []
+                        if (subgroups.drop === "!!!")
+                            word.value[offset + n + 1].coda = []
+                        word.value[offset + n + 1].onset = word.value[offset + n].onset
+                        word.value[offset + n + 1].nucleus.unshift(...word.value[offset + n].nucleus)
+                        word.value.splice(offset + n, 1)
+                    }
+                }
+                else if (word.value[offset + n].hasCoda()) {
+                    if (!word.value[offset + n + 1].hasOnset() && !word.value[offset + n + 1].hasNucleus() 
+                        && word.value[offset + n + 1].hasCoda()) {
+                        if (subgroups.drop === "!")
+                            word.value[offset + n + 1].coda.shift()
+                        else if (subgroups.drop === "!!" || subgroups.drop === "!!!")
+                            word.value[offset + n + 1].coda = []
+                        word.value[offset + n].coda.push(...word.value[offset + n + 1].coda)
+                        word.value.splice(offset + n + 1, 1)
+                    }
+                }
+            }
+            subgroups.content.split(".").forEach((subiflexp, i) => {
+                let j = offset + i
+                let s = subiflexp.match(pattern.infixContent)!.groups!
+                if (after > 6 || (after === 5 && infx[0].hasOnset() && !(s.magnetBefore !== "" && s.main === "")))
+                    j++
+                if (s.magnetBefore !== "" && s.main === "") {
+                    s.magnetAfter = s.magnetBefore
+                    s.magnetBefore = ""
+                }
+                if (s.magnetBefore !== "") {
+                    s.magnetBefore.split("~").slice(1).forEach((special) => {
+                        try {
+                            switch (special) {
+                                case "":
+                                    if (word.value[j - 1].hasCoda())
+                                        word.value[j].onset.unshift(word.value[j - 1].coda.pop()!)
+                                    break
+                                case "$":
+                                    word.value[j].stress = word.value[j- 1].stress
+                                    word.value[j - 1].stress = 0
+                                    break
+                                case "%":
+                                    word.value[j].vowelLength = word.value[j - 1].vowelLength
+                                    word.value[j - 1].vowelLength = 8
+                                    break
+                                case "@":
+                                    word.value[j].tone = word.value[j - 1].tone
+                                    word.value[j - 1].tone = 0
+                                    break
+                                default:
+                            }
+                        }
+                        catch (e) {
+                            throw new Error("Inflexp Magnet Error: ~" + special + " failed to take sounds from the earlier syllable.")
+                        }
+                    })
+                }
+                if (s.magnetAfter !== "") {
+                    s.magnetAfter.split("~").slice(1).forEach((special) => {
+                        try {
+                            switch (special) {
+                                case "":
+                                    if (word.value[j + 1].hasOnset())
+                                        word.value[j].coda.push(word.value[j + 1].onset.shift()!)
+                                    break
+                                case "$":
+                                    word.value[j].stress = word.value[j + 1].stress
+                                    word.value[j + 1].stress = 0
+                                    break
+                                case "%":
+                                    word.value[j].vowelLength = word.value[j + 1].vowelLength
+                                    word.value[j + 1].vowelLength = 8
+                                    break
+                                case "@":
+                                    word.value[j].tone = word.value[j + 1].tone
+                                    word.value[j + 1].tone = 0
+                                    break
+                                default:
+                            }
+                        }
+                        catch (e) {
+                            throw new Error("Inflexp Magnet Error: ~" + special + " failed to take sounds from the next syllable.")
+                        }
+                    })
+                }
+            })
+        }
     }
 
     static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
