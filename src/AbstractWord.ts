@@ -284,7 +284,7 @@ export default abstract class AbstractWord {
                     infx.push(...word.syllabifier(s))
             })
             let n = infx.length,
-                magnetOffset = 0
+                magnetOffset = 0;
             switch (after) {
                 case 1:
                 case 3:
