@@ -283,8 +283,7 @@ export default abstract class AbstractWord {
                 if (s !== "")
                     infx.push(...word.syllabifier(s))
             })
-            let n = infx.length,
-                magnetOffset = 0;
+            let n = infx.length
             switch (after) {
                 case 1:
                 case 3:
@@ -347,6 +346,7 @@ export default abstract class AbstractWord {
                     n--
                 }
             }
+            let magnetOffset = infx.length - n
             if ((offset + n) < word.value.length) {
                 if (word.value[offset + n].hasOnset() && !word.value[offset + n].hasNucleus()) {
                     if (subgroups.drop === "!")
