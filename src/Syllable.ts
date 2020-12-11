@@ -35,6 +35,10 @@ export default class Syllable {
         )
     }
 
+    isEmpty () {
+        return !this.hasOnset() && !this.hasNucleus() && !this.hasCoda()
+    }
+
     hasCoda () {
         return this.coda.length > 0
     }
