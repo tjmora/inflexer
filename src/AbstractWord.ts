@@ -346,7 +346,6 @@ export default abstract class AbstractWord {
                     n--
                 }
             }
-            let magnetOffset = infx.length - n
             if ((offset + n) < word.value.length) {
                 if (word.value[offset + n].hasOnset() && !word.value[offset + n].hasNucleus()) {
                     if (subgroups.drop === "!")
@@ -387,9 +386,9 @@ export default abstract class AbstractWord {
             }
             subgroups.content.split(".").forEach((subiflexp, i) => {
                 let j = offset + i
-                let s = subiflexp.match(pattern.infixContent)!.groups!
-                if (after > 6 || (after === 5 && infx[0].hasOnset() && !(s.magnetBefore !== "" && s.main === "")))
+                if (infx.length > n)
                     j++
+                let s = subiflexp.match(pattern.infixContent)!.groups!
                 if (s.magnetBefore !== "" && s.main === "") {
                     s.magnetAfter = s.magnetBefore
                     s.magnetBefore = ""
