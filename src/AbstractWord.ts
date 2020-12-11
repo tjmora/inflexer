@@ -314,7 +314,6 @@ export default abstract class AbstractWord {
                     break
                 case 7:
                 case 9:
-                    // do nothing
                     break
                 case 8:
                     if (word.value[offset].hasCodaCluster()) {
@@ -326,12 +325,15 @@ export default abstract class AbstractWord {
                 default:
             }
             word.value.splice(offset + 1, 0, ...infx)
+            let magnetOffset = 0
             if (word.value[offset + 1].hasOnset()) {
                 if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
                     word.value[offset + 1].onset.unshift(...word.value[offset].onset)
                     word.value.splice(offset, 1)
                     n--
                 }
+                else
+                    magnetOffset = 1
             }
             else if (word.value[offset + 1].hasNucleus()) {
                 if (word.value[offset].hasOnset() && !word.value[offset].hasNucleus()) {
@@ -345,6 +347,8 @@ export default abstract class AbstractWord {
                     word.value.splice(offset + 1, 1)
                     n--
                 }
+                else
+                    magnetOffset = 1
             }
             if ((offset + n) < word.value.length) {
                 if (word.value[offset + n].hasOnset() && !word.value[offset + n].hasNucleus()) {
@@ -385,14 +389,13 @@ export default abstract class AbstractWord {
                 }
             }
             subgroups.content.split(".").forEach((subiflexp, i) => {
-                let j = offset + i
-                if (infx.length > n)
-                    j++
                 let s = subiflexp.match(pattern.infixContent)!.groups!
-                if (s.magnetBefore !== "" && s.main === "") {
+                if (i === 0 && s.magnetBefore !== "" && s.main === "") {
                     s.magnetAfter = s.magnetBefore
                     s.magnetBefore = ""
+                    magnetOffset = 0
                 }
+                let j = offset + i + magnetOffset
                 if (s.magnetBefore !== "") {
                     s.magnetBefore.split("~").slice(1).forEach((special) => {
                         try {
