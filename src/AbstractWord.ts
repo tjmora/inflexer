@@ -504,8 +504,11 @@ export default abstract class AbstractWord {
                 default:
             }
             word.value.splice(offset + 1, 0, ...infx)
-            if (word.value[0].isEmpty())
+            let magnetOffset = 0
+            if (word.value[0].isEmpty()) {
                 word.value.splice(0, 1)
+                magnetOffset--
+            }
             if ((offset + n) < (word.value.length - 1)) {
                 if (word.value[offset + n].hasCoda()) {
                     if (word.value[offset + n + 1].hasCoda() && !word.value[offset + n + 1].hasNucleus()) {
@@ -570,7 +573,7 @@ export default abstract class AbstractWord {
                     s.magnetAfter = s.magnetBefore
                     s.magnetBefore = ""
                 }
-                let j = offset + n - i
+                let j = offset + n - i + magnetOffset
                 if (s.magnetBefore !== "") {
                     s.magnetBefore.split("~").slice(1).forEach((special) => {
                         try {
