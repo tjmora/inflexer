@@ -715,7 +715,7 @@ export default abstract class AbstractWord {
                             word.value[i].onset = []
                             break
                         case 3:
-                            word.value[i] = new Syllable()
+                            word.value.splice(i, 1)
                             break
                         default:
                     }
@@ -846,7 +846,7 @@ export default abstract class AbstractWord {
                             word.value[i].coda = []
                             break
                         case 3:
-                            word.value[i] = new Syllable()
+                            word.value.splice(i, 1)
                             break
                         default:
                     }
