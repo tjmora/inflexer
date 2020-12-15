@@ -1,25 +1,31 @@
 {
   "name": "inflexer",
-  "version": "1.0.0",
-  "description": "A natural language inflection library.",
+  "version": "1.0.1",
+  "description": "A natural language-agnostic implementation of inflexp.",
   "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "inspectGrouping": "ts-node test/inspectGrouping.ts",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "tsc"
   },
   "keywords": [
     "natural-language-processing"
   ],
   "author": "Tyrel Jonas Mora",
   "license": "MIT",
+  "homepage": "https://github.com/tjmora/inflexer",
   "devDependencies": {
-    "@types/jest": "^26.0.14",
-    "@types/node": "^14.11.8",
+    "@types/jest": "^26.0.19",
+    "@types/node": "^14.14.14",
     "@types/node-fetch": "^2.5.7",
-    "jest": "^26.5.3",
+    "jest": "^26.6.3",
     "node-fetch": "^2.6.1",
-    "ts-jest": "^26.4.1",
-    "ts-node": "^9.0.0",
-    "typescript": "^4.0.3"
+    "ts-jest": "^26.4.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3"
   }
 }
