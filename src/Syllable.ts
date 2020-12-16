@@ -1,4 +1,4 @@
-export default class Syllable {
+export class Syllable {
     
     onset: string[]
     nucleus: string[]

@@ -1,9 +1,8 @@
-import { off } from "process"
 import * as pattern from "./patterns"
-import Syllable from "./Syllable"
+import {Syllable} from "./Syllable"
 
 
-export default abstract class AbstractWord {
+export abstract class AbstractWord {
 
     value: Syllable[]
     

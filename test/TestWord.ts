@@ -1,5 +1,5 @@
-import AbstractWord from "../src/AbstractWord"
-import Syllable from "../src/Syllable"
+import {AbstractWord} from "../src/AbstractWord"
+import {Syllable} from "../src/Syllable"
 
 const vowels = ["a", "e", "i", "o", "u"],
         vowelsGrave = ["à", "è", "ì", "ò", "ù"],
