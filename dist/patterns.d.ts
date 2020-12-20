@@ -1,0 +1,11 @@
+export declare const inflexp: RegExp;
+export declare const charactersAndSpecials: RegExp;
+export declare const rightwardRepetition: RegExp;
+export declare const leftwardRepetition: RegExp;
+export declare const syllableRepeat: RegExp;
+export declare const baseRepetition: RegExp;
+export declare const prefixPush: RegExp;
+export declare const suffixPush: RegExp;
+export declare const rightwardInfix: RegExp;
+export declare const leftwardInfix: RegExp;
+export declare const infixContent: RegExp;
