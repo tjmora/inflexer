@@ -1,0 +1,23 @@
+name: "publish"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: publish
+    runs-on: windows-2019
+    steps:
+      - name: checkout
+        uses: actions/checkout@2.3.4
+      - name: node
+        uses: actions/setup-node@2.1.4
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org
+      - name: publish
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
