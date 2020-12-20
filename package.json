@@ -1,6 +1,6 @@
 {
   "name": "inflexer",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A natural language-agnostic implementation of inflexp.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "inspectGrouping": "ts-node test/inspectGrouping.ts",
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "keywords": [
     "natural-language-processing"
