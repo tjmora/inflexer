@@ -8,16 +8,14 @@ on:
 jobs:
   release:
     name: publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - name: checkout
-        uses: actions/checkout@2.3.4
-      - name: node
-        uses: actions/setup-node@2.1.4
-        with:
-          node-version: 15
-          registry-url: https://registry.npmjs.org
-      - name: publish
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_AUTH_TOKEN}}
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '10.x'
+        registry-url: 'https://registry.npmjs.org'
+    - run: npm install
+    - run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
