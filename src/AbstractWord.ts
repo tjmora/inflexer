@@ -1,5 +1,5 @@
 import * as pattern from "./patterns"
-import {Syllable} from "./Syllable"
+import {Syllable} from "./Syllable" 
 
 
 export abstract class AbstractWord {
