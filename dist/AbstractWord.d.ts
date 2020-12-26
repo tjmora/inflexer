@@ -10,7 +10,7 @@ export declare abstract class AbstractWord {
      */
     protected abstract copy(): this;
     protected abstract syllabifier(param: string | ((word: string) => Syllable[])): Syllable[];
-    protected abstract toString(param: null | (() => string)): string;
+    protected abstract toString(param: null | ((value: Syllable[]) => string)): string;
     protected abstract specialMarkPlacer(): string;
     inflect(inflexp: string): this;
     static _repeat(word: AbstractWord, groups: {

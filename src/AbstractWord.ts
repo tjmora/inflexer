@@ -20,7 +20,7 @@ export abstract class AbstractWord {
 
     protected abstract syllabifier (param: string | ((word: string) => Syllable[])): Syllable[]
 
-    protected abstract toString (param: null | (() => string)): string
+    protected abstract toString (param: null | ((value: Syllable[]) => string)): string
 
     protected abstract specialMarkPlacer (): string
 
