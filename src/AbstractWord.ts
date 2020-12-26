@@ -18,9 +18,9 @@ export abstract class AbstractWord {
      */
     protected abstract copy (): this
 
-    protected abstract syllabifier (word: string): Syllable[]
+    protected abstract syllabifier (param: string | ((word: string) => Syllable[])): Syllable[]
 
-    protected abstract toString (): string
+    protected abstract toString (param: null | (() => string)): string
 
     protected abstract specialMarkPlacer (): string
 
