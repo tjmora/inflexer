@@ -28,10 +28,10 @@ var AbstractWord = /** @class */ (function () {
         this.value = typeof word === "string" ? this.syllabifier(word) : word;
     }
     AbstractWord.prototype.inflect = function (inflexp) {
+        var _this = this;
         var _a;
         var groups = (_a = inflexp.match(pattern.inflexp)) === null || _a === void 0 ? void 0 : _a.groups;
         var precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix];
-        var result = this.copy();
         if (groups.precedence !== undefined) {
             precedence = [];
             __spread(groups.precedence).forEach(function (ch) {
@@ -52,8 +52,7 @@ var AbstractWord = /** @class */ (function () {
                 }
             });
         }
-        precedence.forEach(function (fn) { return fn(result, groups); });
-        return result;
+        precedence.forEach(function (fn) { return fn(_this, groups); });
     };
     AbstractWord._repeat = function (word, groups) {
         var _a;

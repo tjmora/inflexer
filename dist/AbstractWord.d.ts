@@ -12,7 +12,7 @@ export declare abstract class AbstractWord {
     protected abstract syllabifier(word: string, orthography?: ((wrd: string) => Syllable[])): Syllable[];
     protected abstract toString(param?: ((value: Syllable[]) => string)): string;
     protected abstract specialMarkPlacer(): string;
-    inflect(inflexp: string): this;
+    inflect(inflexp: string): void;
     static _repeat(word: AbstractWord, groups: {
         [key: string]: string;
     }): void;

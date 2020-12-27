@@ -27,7 +27,6 @@ export abstract class AbstractWord {
     inflect (inflexp: string) {
         let groups = inflexp.match(pattern.inflexp)?.groups!
         let precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix]
-        let result = this.copy()
         if (groups.precedence !== undefined) {
             precedence = [];
             [...groups!.precedence].forEach((ch) => {
@@ -48,8 +47,7 @@ export abstract class AbstractWord {
                 }
             })
         }
-        precedence.forEach(fn => fn(result, groups))
-        return result
+        precedence.forEach(fn => fn(this, groups))
     }
 
     static _repeat (word: AbstractWord, groups: {[key:string]: string}) {

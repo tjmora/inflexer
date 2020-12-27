@@ -15,8 +15,9 @@ test('the data is peanut butter', done => {
         try {
             data.forEach((item) => {
                 catcher = item
-                let word = new TestWord(item[0])
-                let word2 = word.inflect(item[1])
+                let word2 = new TestWord(item[0])
+                let word1 = word2.copy()
+                word2.inflect(item[1])
                 expect(word2.toString()).toBe(item[2])
              })
             done();
