@@ -1,26 +1,30 @@
 import * as pattern from "./patterns"
 import {Syllable} from "./Syllable" 
 
+export interface AbstractWordProps {
+    base: string | Syllable[]
+    syllabifier: (word: string) => Syllable[]
+    printer: (value: Syllable[]) => string
+}
+
 
 export abstract class AbstractWord {
 
     value: Syllable[]
+    syllabifier: (word: string) => Syllable[]
+    printer: (value: Syllable[]) => string
     
-    constructor (word: string | Syllable[]) {
-        this.value = typeof word === "string" ? this.syllabifier(word) : (word as Syllable[])
+    constructor (options: AbstractWordProps) {
+        this.value = typeof options.base === "string" ? this.syllabify(options.base) : (options.base as Syllable[])
+        this.syllabifier = options.syllabifier
+        this.printer = options.printer
     }
 
-    /**
-     * Inhereting classes should implement copy() as follows:
-     *     copy () {
-     *         return new ChildClass(this.value.map(syllable => syllable.copy())) as this
-     *     }
-     */
     protected abstract copy (): this
 
-    protected abstract syllabifier (word: string, orthography?: ((wrd: string) => Syllable[])): Syllable[]
+    protected abstract syllabify (word: string): Syllable[]
 
-    protected abstract toString (param?: ((value: Syllable[]) => string)): string
+    protected abstract toString (): string
 
     protected abstract specialMarkPlacer (): string
 
@@ -278,7 +282,7 @@ export abstract class AbstractWord {
                 infx: Syllable[] = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(s => {
                 if (s !== "")
-                    infx.push(...word.syllabifier(s))
+                    infx.push(...word.syllabify(s))
             })
             let n = infx.length
             switch (after) {
@@ -458,7 +462,7 @@ export abstract class AbstractWord {
                 infx: Syllable[] = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(s => {
                 if (s !== "")
-                    infx.push(...word.syllabifier(s))
+                    infx.push(...word.syllabify(s))
             })
             let n = infx.length
             switch (before) {
@@ -633,7 +637,7 @@ export abstract class AbstractWord {
 
     static _prefix (word: AbstractWord, groups: {[key:string]: string}) {
         if (groups.prefix !== undefined) {
-            let prefx = word.syllabifier(groups.prefix),
+            let prefx = word.syllabify(groups.prefix),
                 n = prefx.length;
             if (n > 0)
                 word.value.unshift(...prefx)
@@ -646,7 +650,7 @@ export abstract class AbstractWord {
                 let subgroups = subinflexp.match(pattern.prefixPush)!.groups!
 
                 if (subgroups.main !== "") {
-                    let p = word.syllabifier(subgroups.main)[0]
+                    let p = word.syllabify(subgroups.main)[0]
                     if (p.hasCoda()) {
                         word.value[i].onset = p.onset
                         word.value[i].nucleus = p.nucleus
@@ -766,7 +770,7 @@ export abstract class AbstractWord {
     static _suffix (word: AbstractWord, groups: {[key:string]: string}) {
         if (groups.suffix !== undefined) {
             let l = word.value.length,
-                sufx = word.syllabifier(groups.suffix),
+                sufx = word.syllabify(groups.suffix),
                 n = sufx.length;
             if (n > 0)
                 word.value.push(...sufx)
@@ -778,7 +782,7 @@ export abstract class AbstractWord {
                     return
                 let subgroups = subinflexp.match(pattern.suffixPush)!.groups!
                 if (subgroups.main !== "") {
-                    let s = word.syllabifier(subgroups.main)[0]
+                    let s = word.syllabify(subgroups.main)[0]
                     if (s.hasOnset() && s.hasNucleus()) {
                         word.value[i].coda = s.coda
                         word.value[i].nucleus = s.nucleus

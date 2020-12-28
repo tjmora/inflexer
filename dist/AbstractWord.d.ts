@@ -1,16 +1,17 @@
 import { Syllable } from "./Syllable";
+export interface AbstractWordProps {
+    base: string | Syllable[];
+    syllabifier: (word: string) => Syllable[];
+    printer: (value: Syllable[]) => string;
+}
 export declare abstract class AbstractWord {
     value: Syllable[];
-    constructor(word: string | Syllable[]);
-    /**
-     * Inhereting classes should implement copy() as follows:
-     *     copy () {
-     *         return new ChildClass(this.value.map(syllable => syllable.copy())) as this
-     *     }
-     */
+    syllabifier: (word: string) => Syllable[];
+    printer: (value: Syllable[]) => string;
+    constructor(options: AbstractWordProps);
     protected abstract copy(): this;
-    protected abstract syllabifier(word: string, orthography?: ((wrd: string) => Syllable[])): Syllable[];
-    protected abstract toString(param?: ((value: Syllable[]) => string)): string;
+    protected abstract syllabify(word: string): Syllable[];
+    protected abstract toString(): string;
     protected abstract specialMarkPlacer(): string;
     inflect(inflexp: string): void;
     static _repeat(word: AbstractWord, groups: {

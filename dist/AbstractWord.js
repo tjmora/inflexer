@@ -24,8 +24,10 @@ exports.AbstractWord = void 0;
 var pattern = require("./patterns");
 var Syllable_1 = require("./Syllable");
 var AbstractWord = /** @class */ (function () {
-    function AbstractWord(word) {
-        this.value = typeof word === "string" ? this.syllabifier(word) : word;
+    function AbstractWord(options) {
+        this.value = typeof options.base === "string" ? this.syllabify(options.base) : options.base;
+        this.syllabifier = options.syllabifier;
+        this.printer = options.printer;
     }
     AbstractWord.prototype.inflect = function (inflexp) {
         var _this = this;
@@ -279,7 +281,7 @@ var AbstractWord = /** @class */ (function () {
             var subgroups = groups.rightwardInfix.match(pattern.rightwardInfix).groups, offset_1 = subgroups.offset.length, after = parseInt(subgroups.after), infx_1 = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(function (s) {
                 if (s !== "")
-                    infx_1.push.apply(infx_1, __spread(word.syllabifier(s)));
+                    infx_1.push.apply(infx_1, __spread(word.syllabify(s)));
             });
             var n = infx_1.length;
             switch (after) {
@@ -456,7 +458,7 @@ var AbstractWord = /** @class */ (function () {
             var subgroups = groups.leftwardInfix.match(pattern.leftwardInfix).groups, offset_2 = word.value.length - 1 - subgroups.offset.length, before = parseInt(subgroups.before), infx_2 = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(function (s) {
                 if (s !== "")
-                    infx_2.push.apply(infx_2, __spread(word.syllabifier(s)));
+                    infx_2.push.apply(infx_2, __spread(word.syllabify(s)));
             });
             var n_1 = infx_2.length;
             switch (before) {
@@ -631,7 +633,7 @@ var AbstractWord = /** @class */ (function () {
     AbstractWord._prefix = function (word, groups) {
         var _a;
         if (groups.prefix !== undefined) {
-            var prefx = word.syllabifier(groups.prefix), n_2 = prefx.length;
+            var prefx = word.syllabify(groups.prefix), n_2 = prefx.length;
             if (n_2 > 0)
                 (_a = word.value).unshift.apply(_a, __spread(prefx));
             var i_2 = n_2;
@@ -644,7 +646,7 @@ var AbstractWord = /** @class */ (function () {
                     return;
                 var subgroups = subinflexp.match(pattern.prefixPush).groups;
                 if (subgroups.main !== "") {
-                    var p = word.syllabifier(subgroups.main)[0];
+                    var p = word.syllabify(subgroups.main)[0];
                     if (p.hasCoda()) {
                         word.value[i_2].onset = p.onset;
                         word.value[i_2].nucleus = p.nucleus;
@@ -761,7 +763,7 @@ var AbstractWord = /** @class */ (function () {
     AbstractWord._suffix = function (word, groups) {
         var _a;
         if (groups.suffix !== undefined) {
-            var l_1 = word.value.length, sufx = word.syllabifier(groups.suffix), n = sufx.length;
+            var l_1 = word.value.length, sufx = word.syllabify(groups.suffix), n = sufx.length;
             if (n > 0)
                 (_a = word.value).push.apply(_a, __spread(sufx));
             if (groups.suffixMark !== "")
@@ -774,7 +776,7 @@ var AbstractWord = /** @class */ (function () {
                     return;
                 var subgroups = subinflexp.match(pattern.suffixPush).groups;
                 if (subgroups.main !== "") {
-                    var s_1 = word.syllabifier(subgroups.main)[0];
+                    var s_1 = word.syllabify(subgroups.main)[0];
                     if (s_1.hasOnset() && s_1.hasNucleus()) {
                         word.value[i_3].coda = s_1.coda;
                         word.value[i_3].nucleus = s_1.nucleus;
