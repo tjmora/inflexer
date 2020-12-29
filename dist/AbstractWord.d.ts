@@ -11,10 +11,10 @@ export declare abstract class AbstractWord {
     value: Syllable[];
     orthography: Orthography;
     constructor(options: AbstractWordProps);
-    protected abstract copy(): this;
-    protected abstract syllabify(word: string): Syllable[];
-    protected abstract toString(): string;
-    protected abstract specialMarkPlacer(): string;
+    abstract copy(): this;
+    abstract syllabify(word: string): Syllable[];
+    abstract toString(): string;
+    abstract specialMarkPlacer(): string;
     inflect(inflexp: string): void;
     static _repeat(word: AbstractWord, groups: {
         [key: string]: string;

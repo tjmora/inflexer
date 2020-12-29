@@ -1,4 +1,4 @@
-import TestWord from "../TestWord"
+import TestWord, {ortho} from "../TestWord"
 import fetch from "node-fetch"
 
 function fetchData (callback: (data: [string, string, string][]) => void) {
@@ -15,7 +15,10 @@ test('the data is peanut butter', done => {
         try {
             data.forEach((item) => {
                 catcher = item
-                let word2 = new TestWord(item[0])
+                let word2 = new TestWord({
+                    base: item[0],
+                    orthography: ortho
+                })
                 let word1 = word2.copy()
                 word2.inflect(item[1])
                 expect(word2.toString()).toBe(item[2])

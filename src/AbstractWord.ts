@@ -2,32 +2,33 @@ import * as pattern from "./patterns"
 import {Syllable} from "./Syllable" 
 
 export interface Orthography {
-    syllabifier: (word: string) => Syllable[]
-    printer: (value: Syllable[]) => string
+    syllabifier: (word: string) => Syllable[];
+    printer: (value: Syllable[]) => string;
 }
 
 export interface AbstractWordProps {
-    base: string | Syllable[]
-    orthography: Orthography
+    base: string | Syllable[];
+    orthography: Orthography;
 }
 
 export abstract class AbstractWord {
 
     value: Syllable[]
+
     orthography: Orthography
     
     constructor (options: AbstractWordProps) {
-        this.value = typeof options.base === "string" ? this.syllabify(options.base) : (options.base as Syllable[])
         this.orthography = options.orthography
+        this.value = typeof options.base === "string" ? this.syllabify(options.base) : (options.base as Syllable[])
     }
 
-    protected abstract copy (): this
+    abstract copy (): this
 
-    protected abstract syllabify (word: string): Syllable[]
+    abstract syllabify (word: string): Syllable[]
 
-    protected abstract toString (): string
+    abstract toString (): string
 
-    protected abstract specialMarkPlacer (): string
+    abstract specialMarkPlacer (): string
 
     inflect (inflexp: string) {
         let groups = inflexp.match(pattern.inflexp)?.groups!
