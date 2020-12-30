@@ -25,7 +25,14 @@ var pattern = require("./patterns");
 var Syllable_1 = require("./Syllable");
 var AbstractWord = /** @class */ (function () {
     function AbstractWord(base) {
-        this.value = typeof base === "string" ? this.syllabify(base) : base;
+        if (typeof base === "string") {
+            if (base !== "")
+                this.value = this.syllabify(base);
+            else
+                this.value = [];
+        }
+        else
+            this.value = base;
     }
     AbstractWord.prototype.inflect = function (inflexp) {
         var _this = this;

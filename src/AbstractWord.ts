@@ -6,7 +6,14 @@ export abstract class AbstractWord {
     value: Syllable[]
     
     constructor (base: string | Syllable[]) {
-        this.value = typeof base === "string" ? this.syllabify(base as string) : (base as Syllable[])
+        if (typeof base === "string") {
+            if (base !== "")
+                this.value = this.syllabify(base as string)
+            else
+                this.value = []
+        }
+        else
+            this.value = base as Syllable[]
     }
 
     abstract copy (): this
