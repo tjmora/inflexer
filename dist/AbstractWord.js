@@ -24,9 +24,8 @@ exports.AbstractWord = void 0;
 var pattern = require("./patterns");
 var Syllable_1 = require("./Syllable");
 var AbstractWord = /** @class */ (function () {
-    function AbstractWord(options) {
-        this.orthography = options.orthography;
-        this.value = typeof options.base === "string" ? this.syllabify(options.base) : options.base;
+    function AbstractWord(base) {
+        this.value = typeof base === "string" ? this.syllabify(base) : base;
     }
     AbstractWord.prototype.inflect = function (inflexp) {
         var _this = this;

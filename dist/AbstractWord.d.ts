@@ -1,16 +1,7 @@
 import { Syllable } from "./Syllable";
-export interface Orthography {
-    syllabifier: (word: string) => Syllable[];
-    printer: (value: Syllable[]) => string;
-}
-export interface AbstractWordProps {
-    base: string | Syllable[];
-    orthography: Orthography;
-}
 export declare abstract class AbstractWord {
     value: Syllable[];
-    orthography: Orthography;
-    constructor(options: AbstractWordProps);
+    constructor(base: string | Syllable[]);
     abstract copy(): this;
     abstract syllabify(word: string): Syllable[];
     abstract toString(): string;

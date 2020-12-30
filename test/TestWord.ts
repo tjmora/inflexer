@@ -1,4 +1,4 @@
-import {AbstractWord, AbstractWordProps, Orthography} from "../src/AbstractWord"
+import {AbstractWord} from "../src/AbstractWord"
 import {Syllable} from "../src/Syllable"
 
 const vowels = ["a", "e", "i", "o", "u"],
@@ -75,9 +75,13 @@ function encodeAccent (syllable: Syllable): string {
     return vowels[n]
 }
 
-export const ortho: Orthography = {
-    
-    syllabifier: (word: string): Syllable[] => {
+export default class TestWord extends AbstractWord {
+
+    copy () {
+        return new TestWord(this.value) as this
+    }
+
+    syllabify (word: string): Syllable[] {
         let syll = word.match(/([bcdfghjklmnpqrstvwxyz]*[aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]*([bcdfghjklmnpqrstvwxyz](?![aeiouàèìòùáéíóúăĕĭŏŭȃȇȋȏȗāēīōūạẹịọụảẻỉỏủãẽĩõũ]))*(·(?<!$))?)/gi)!
         syll.pop()
         let result: Syllable[] = []
@@ -99,11 +103,15 @@ export const ortho: Orthography = {
             i++
         })
         return result
-    },
+    }
 
-    printer: (value: Syllable[]): string => {
+    specialMarkPlacer () {
+        return "-"
+    }
+
+    toString (): string {
         let result = ""
-        value.forEach((s) => {
+        this.value.forEach((s) => {
             result += 
                 s.premark
                 + s.onset.join("")
@@ -113,27 +121,5 @@ export const ortho: Orthography = {
                 + "·"
         })
         return result.slice(0, result.length - 1)
-    }
-}
-
-export default class TestWord extends AbstractWord {
-
-    copy () {
-        return new TestWord({
-            base: this.value,
-            orthography: ortho
-        }) as this
-    }
-
-    syllabify (word: string): Syllable[] {
-        return this.orthography.syllabifier(word)
-    }
-
-    specialMarkPlacer () {
-        return "-"
-    }
-
-    toString (): string {
-        return this.orthography.printer(this.value)
     }
 }

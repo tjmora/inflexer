@@ -1,25 +1,12 @@
 import * as pattern from "./patterns"
 import {Syllable} from "./Syllable" 
 
-export interface Orthography {
-    syllabifier: (word: string) => Syllable[];
-    printer: (value: Syllable[]) => string;
-}
-
-export interface AbstractWordProps {
-    base: string | Syllable[];
-    orthography: Orthography;
-}
-
 export abstract class AbstractWord {
 
     value: Syllable[]
-
-    orthography: Orthography
     
-    constructor (options: AbstractWordProps) {
-        this.orthography = options.orthography
-        this.value = typeof options.base === "string" ? this.syllabify(options.base) : (options.base as Syllable[])
+    constructor (base: string | Syllable[]) {
+        this.value = typeof base === "string" ? this.syllabify(base as string) : (base as Syllable[])
     }
 
     abstract copy (): this
