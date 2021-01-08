@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Syllable = void 0;
+function arrayEquals(arr1, arr2) {
+    return arr1.length === arr2.length && arr1.every(function (val, i) { return val === arr2[i]; });
+}
 var Syllable = /** @class */ (function () {
     function Syllable(onset, nucleus, coda, stress, vowelLength, tone, premark, postmark) {
         if (onset === void 0) { onset = []; }
@@ -20,6 +23,9 @@ var Syllable = /** @class */ (function () {
         this.premark = premark;
         this.postmark = postmark;
     }
+    Syllable.prototype.codaIs = function (arr) {
+        return arrayEquals(this.coda, arr);
+    };
     Syllable.prototype.copy = function () {
         return new Syllable(this.onset.map(function (ch) { return ch; }), this.nucleus.map(function (ch) { return ch; }), this.coda.map(function (ch) { return ch; }), this.stress, this.vowelLength, this.tone, this.premark, this.postmark);
     };
@@ -43,6 +49,12 @@ var Syllable = /** @class */ (function () {
     };
     Syllable.prototype.hasOnset = function () {
         return this.onset.length > 0;
+    };
+    Syllable.prototype.nucleusIs = function (arr) {
+        return arrayEquals(this.nucleus, arr);
+    };
+    Syllable.prototype.onsetIs = function (arr) {
+        return arrayEquals(this.onset, arr);
     };
     return Syllable;
 }());
