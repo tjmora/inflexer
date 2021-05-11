@@ -15,9 +15,10 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractWord = void 0;
@@ -41,7 +42,7 @@ var AbstractWord = /** @class */ (function () {
         var precedence = [AbstractWord._repeat, AbstractWord._infix, AbstractWord._prefix, AbstractWord._suffix];
         if (groups.precedence !== undefined) {
             precedence = [];
-            __spread(groups.precedence).forEach(function (ch) {
+            __spreadArray([], __read(groups.precedence)).forEach(function (ch) {
                 switch (ch) {
                     case "r":
                         precedence.push(AbstractWord._repeat);
@@ -72,7 +73,7 @@ var AbstractWord = /** @class */ (function () {
                 ? 0
                 : word.value.length - (repetitionInflexp.match(/\:/g) || []).length - 1;
             if (i_1 > 0)
-                result_1.push.apply(result_1, __spread(word.value.slice(0, i_1).map(function (syll) { return syll.copy(); })));
+                result_1.push.apply(result_1, __spreadArray([], __read(word.value.slice(0, i_1).map(function (syll) { return syll.copy(); }))));
             repetitionInflexp.split(":").forEach(function (subinflexp) {
                 var j = 0;
                 var k = groups.rightwardRepetitionFirst !== undefined
@@ -159,7 +160,7 @@ var AbstractWord = /** @class */ (function () {
                         var orig = r.map(function (syll) { return syll.copy(); });
                         var q = subgroups_1.duplicator.length;
                         for (var p = 0; p < q; p++)
-                            r.push.apply(r, __spread(orig.map(function (syll) { return syll.copy(); })));
+                            r.push.apply(r, __spreadArray([], __read(orig.map(function (syll) { return syll.copy(); }))));
                         j += q;
                     }
                     if (subgroups_1.specialMarkBefore !== undefined && subgroups_1.specialMarkBefore !== "")
@@ -246,17 +247,17 @@ var AbstractWord = /** @class */ (function () {
                         r[j].postmark = word.specialMarkPlacer();
                 }
                 if (r.length > 0 && placeAfter === 0) {
-                    result_1.push.apply(result_1, __spread(r));
+                    result_1.push.apply(result_1, __spreadArray([], __read(r)));
                     result_1.push(word.value[i_1].copy());
                 }
                 else if (r.length > 0 && placeAfter === 1)
-                    result_1.push.apply(result_1, __spread([word.value[i_1].copy()], r));
+                    result_1.push.apply(result_1, __spreadArray([word.value[i_1].copy()], __read(r)));
                 else
                     result_1.push(word.value[i_1].copy());
                 i_1++;
             });
             if (i_1 < word.value.length)
-                result_1.push.apply(result_1, __spread(word.value.slice(i_1).map(function (syll) { return syll.copy(); })));
+                result_1.push.apply(result_1, __spreadArray([], __read(word.value.slice(i_1).map(function (syll) { return syll.copy(); }))));
             word.value = result_1;
         }
         else if (groups.baseRepetition !== undefined) {
@@ -266,7 +267,7 @@ var AbstractWord = /** @class */ (function () {
                 var cpy = orig_1.map(function (syll) { return syll.copy(); });
                 var willUnshift = false;
                 for (var p = 0, q = (groups.baseRepetition.match(/\+/g) || []).length; p < q; p++)
-                    cpy.push.apply(cpy, __spread(cpy.map(function (syll) { return syll.copy(); })));
+                    cpy.push.apply(cpy, __spreadArray([], __read(cpy.map(function (syll) { return syll.copy(); }))));
                 if (subinflexp.endsWith("=")) {
                     cpy[cpy.length - 1].postmark = word.specialMarkPlacer();
                     willUnshift = true;
@@ -274,9 +275,9 @@ var AbstractWord = /** @class */ (function () {
                 if (subinflexp.startsWith("="))
                     cpy[0].premark = word.specialMarkPlacer();
                 if (willUnshift)
-                    (_a = word.value).unshift.apply(_a, __spread(cpy));
+                    (_a = word.value).unshift.apply(_a, __spreadArray([], __read(cpy)));
                 else
-                    (_b = word.value).push.apply(_b, __spread(cpy));
+                    (_b = word.value).push.apply(_b, __spreadArray([], __read(cpy)));
             });
         }
     };
@@ -286,7 +287,7 @@ var AbstractWord = /** @class */ (function () {
             var subgroups = groups.rightwardInfix.match(pattern.rightwardInfix).groups, offset_1 = subgroups.offset.length, after = parseInt(subgroups.after), infx_1 = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(function (s) {
                 if (s !== "")
-                    infx_1.push.apply(infx_1, __spread(word.syllabify(s)));
+                    infx_1.push.apply(infx_1, __spreadArray([], __read(word.syllabify(s))));
             });
             var n = infx_1.length;
             switch (after) {
@@ -329,11 +330,11 @@ var AbstractWord = /** @class */ (function () {
                     break;
                 default:
             }
-            (_a = word.value).splice.apply(_a, __spread([offset_1 + 1, 0], infx_1));
+            (_a = word.value).splice.apply(_a, __spreadArray([offset_1 + 1, 0], __read(infx_1)));
             var magnetOffset_1 = 0;
             if (word.value[offset_1 + 1].hasOnset()) {
                 if (word.value[offset_1].hasOnset() && !word.value[offset_1].hasNucleus()) {
-                    (_b = word.value[offset_1 + 1].onset).unshift.apply(_b, __spread(word.value[offset_1].onset));
+                    (_b = word.value[offset_1 + 1].onset).unshift.apply(_b, __spreadArray([], __read(word.value[offset_1].onset)));
                     word.value.splice(offset_1, 1);
                     n--;
                 }
@@ -347,7 +348,7 @@ var AbstractWord = /** @class */ (function () {
                     n--;
                 }
                 else if (word.value[offset_1].hasNucleus() && !word.value[offset_1].hasCoda()) {
-                    (_c = word.value[offset_1].nucleus).push.apply(_c, __spread(word.value[offset_1 + 1].nucleus));
+                    (_c = word.value[offset_1].nucleus).push.apply(_c, __spreadArray([], __read(word.value[offset_1 + 1].nucleus)));
                     word.value[offset_1].coda = word.value[offset_1 + 1].coda;
                     word.value.splice(offset_1 + 1, 1);
                     n--;
@@ -365,7 +366,7 @@ var AbstractWord = /** @class */ (function () {
                         word.value[offset_1 + n + 1].nucleus = [];
                         word.value[offset_1 + n + 1].coda = [];
                     }
-                    (_d = word.value[offset_1 + n + 1].onset).unshift.apply(_d, __spread(word.value[offset_1 + n].onset));
+                    (_d = word.value[offset_1 + n + 1].onset).unshift.apply(_d, __spreadArray([], __read(word.value[offset_1 + n].onset)));
                     word.value.splice(offset_1 + n, 1);
                 }
                 else if (word.value[offset_1 + n].hasNucleus() && !word.value[offset_1 + n].hasCoda()) {
@@ -377,7 +378,7 @@ var AbstractWord = /** @class */ (function () {
                         if (subgroups.drop === "!!!")
                             word.value[offset_1 + n + 1].coda = [];
                         word.value[offset_1 + n + 1].onset = word.value[offset_1 + n].onset;
-                        (_e = word.value[offset_1 + n + 1].nucleus).unshift.apply(_e, __spread(word.value[offset_1 + n].nucleus));
+                        (_e = word.value[offset_1 + n + 1].nucleus).unshift.apply(_e, __spreadArray([], __read(word.value[offset_1 + n].nucleus)));
                         word.value.splice(offset_1 + n, 1);
                     }
                 }
@@ -388,7 +389,7 @@ var AbstractWord = /** @class */ (function () {
                             word.value[offset_1 + n + 1].coda.shift();
                         else if (subgroups.drop === "!!" || subgroups.drop === "!!!")
                             word.value[offset_1 + n + 1].coda = [];
-                        (_f = word.value[offset_1 + n].coda).push.apply(_f, __spread(word.value[offset_1 + n + 1].coda));
+                        (_f = word.value[offset_1 + n].coda).push.apply(_f, __spreadArray([], __read(word.value[offset_1 + n + 1].coda)));
                         word.value.splice(offset_1 + n + 1, 1);
                     }
                 }
@@ -463,7 +464,7 @@ var AbstractWord = /** @class */ (function () {
             var subgroups = groups.leftwardInfix.match(pattern.leftwardInfix).groups, offset_2 = word.value.length - 1 - subgroups.offset.length, before = parseInt(subgroups.before), infx_2 = [];
             subgroups.content.replace(/(~(\$|%|@)?)*/gi, "").split(".").forEach(function (s) {
                 if (s !== "")
-                    infx_2.push.apply(infx_2, __spread(word.syllabify(s)));
+                    infx_2.push.apply(infx_2, __spreadArray([], __read(word.syllabify(s))));
             });
             var n_1 = infx_2.length;
             switch (before) {
@@ -505,7 +506,7 @@ var AbstractWord = /** @class */ (function () {
                     break;
                 default:
             }
-            (_g = word.value).splice.apply(_g, __spread([offset_2 + 1, 0], infx_2));
+            (_g = word.value).splice.apply(_g, __spreadArray([offset_2 + 1, 0], __read(infx_2)));
             var magnetOffset_2 = 0;
             if (word.value[0].isEmpty()) {
                 word.value.splice(0, 1);
@@ -514,7 +515,7 @@ var AbstractWord = /** @class */ (function () {
             if ((offset_2 + n_1) < (word.value.length - 1)) {
                 if (word.value[offset_2 + n_1].hasCoda()) {
                     if (word.value[offset_2 + n_1 + 1].hasCoda() && !word.value[offset_2 + n_1 + 1].hasNucleus()) {
-                        (_h = word.value[offset_2 + n_1].coda).push.apply(_h, __spread(word.value[offset_2 + n_1 + 1].coda));
+                        (_h = word.value[offset_2 + n_1].coda).push.apply(_h, __spreadArray([], __read(word.value[offset_2 + n_1 + 1].coda)));
                         word.value.splice(offset_2 + n_1 + 1, 1);
                     }
                 }
@@ -524,7 +525,7 @@ var AbstractWord = /** @class */ (function () {
                         word.value.splice(offset_2 + n_1 + 1, 1);
                     }
                     else if (word.value[offset_2 + n_1 + 1].hasNucleus() && !word.value[offset_2 + n_1 + 1].hasOnset()) {
-                        (_j = word.value[offset_2 + n_1 + 1].nucleus).unshift.apply(_j, __spread(word.value[offset_2 + n_1].nucleus));
+                        (_j = word.value[offset_2 + n_1 + 1].nucleus).unshift.apply(_j, __spreadArray([], __read(word.value[offset_2 + n_1].nucleus)));
                         word.value[offset_2 + n_1 + 1].onset = word.value[offset_2 + n_1].onset;
                         word.value.splice(offset_2 + n_1, 1);
                     }
@@ -539,7 +540,7 @@ var AbstractWord = /** @class */ (function () {
                     word.value[offset_2].nucleus = [];
                     word.value[offset_2].onset = [];
                 }
-                (_k = word.value[offset_2].coda).push.apply(_k, __spread(word.value[offset_2 + 1].onset));
+                (_k = word.value[offset_2].coda).push.apply(_k, __spreadArray([], __read(word.value[offset_2 + 1].onset)));
                 word.value.splice(offset_2 + 1, 1);
                 n_1--;
             }
@@ -552,7 +553,7 @@ var AbstractWord = /** @class */ (function () {
                     if (subgroups.drop === "!!!")
                         word.value[offset_2].onset = [];
                     word.value[offset_2].coda = word.value[offset_2 + 1].coda;
-                    (_l = word.value[offset_2].nucleus).push.apply(_l, __spread(word.value[offset_2 + 1].nucleus));
+                    (_l = word.value[offset_2].nucleus).push.apply(_l, __spreadArray([], __read(word.value[offset_2 + 1].nucleus)));
                     word.value.splice(offset_2 + 1, 1);
                     n_1--;
                 }
@@ -564,7 +565,7 @@ var AbstractWord = /** @class */ (function () {
                         word.value[offset_2].onset.pop();
                     else if (subgroups.drop === "!!" || subgroups.drop === "!!!")
                         word.value[offset_2].onset = [];
-                    (_m = word.value[offset_2 + 1].onset).unshift.apply(_m, __spread(word.value[offset_2].onset));
+                    (_m = word.value[offset_2 + 1].onset).unshift.apply(_m, __spreadArray([], __read(word.value[offset_2].onset)));
                     word.value.splice(offset_2, 1);
                     n_1--;
                 }
@@ -640,7 +641,7 @@ var AbstractWord = /** @class */ (function () {
         if (groups.prefix !== undefined) {
             var prefx = word.syllabify(groups.prefix), n_2 = prefx.length;
             if (n_2 > 0)
-                (_a = word.value).unshift.apply(_a, __spread(prefx));
+                (_a = word.value).unshift.apply(_a, __spreadArray([], __read(prefx)));
             var i_2 = n_2;
             if (groups.prefixMark !== "")
                 word.value[n_2 - 1].postmark = word.specialMarkPlacer();
@@ -657,11 +658,11 @@ var AbstractWord = /** @class */ (function () {
                         word.value[i_2].nucleus = p.nucleus;
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_a = word.value[i_2].coda).unshift.apply(_a, __spread(p.coda));
+                                (_a = word.value[i_2].coda).unshift.apply(_a, __spreadArray([], __read(p.coda)));
                                 break;
                             case 1:
                                 word.value[i_2].coda.shift();
-                                (_b = word.value[i_2].coda).unshift.apply(_b, __spread(p.coda));
+                                (_b = word.value[i_2].coda).unshift.apply(_b, __spreadArray([], __read(p.coda)));
                                 break;
                             case 2:
                                 word.value[i_2].coda = p.coda;
@@ -675,11 +676,11 @@ var AbstractWord = /** @class */ (function () {
                         word.value[i_2].onset = p.onset;
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_c = word.value[i_2].nucleus).unshift.apply(_c, __spread(p.nucleus));
+                                (_c = word.value[i_2].nucleus).unshift.apply(_c, __spreadArray([], __read(p.nucleus)));
                                 break;
                             case 1:
                                 word.value[i_2].nucleus.shift();
-                                (_d = word.value[i_2].nucleus).unshift.apply(_d, __spread(p.nucleus));
+                                (_d = word.value[i_2].nucleus).unshift.apply(_d, __spreadArray([], __read(p.nucleus)));
                                 break;
                             case 2:
                                 word.value[i_2].nucleus = p.nucleus;
@@ -692,11 +693,11 @@ var AbstractWord = /** @class */ (function () {
                     else if (p.hasOnset()) {
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_e = word.value[i_2].onset).unshift.apply(_e, __spread(p.onset));
+                                (_e = word.value[i_2].onset).unshift.apply(_e, __spreadArray([], __read(p.onset)));
                                 break;
                             case 1:
                                 word.value[i_2].onset.shift();
-                                (_f = word.value[i_2].onset).unshift.apply(_f, __spread(p.onset));
+                                (_f = word.value[i_2].onset).unshift.apply(_f, __spreadArray([], __read(p.onset)));
                                 break;
                             case 2:
                                 word.value[i_2].onset = p.onset;
@@ -770,7 +771,7 @@ var AbstractWord = /** @class */ (function () {
         if (groups.suffix !== undefined) {
             var l_1 = word.value.length, sufx = word.syllabify(groups.suffix), n = sufx.length;
             if (n > 0)
-                (_a = word.value).push.apply(_a, __spread(sufx));
+                (_a = word.value).push.apply(_a, __spreadArray([], __read(sufx)));
             if (groups.suffixMark !== "")
                 word.value[l_1].premark = word.specialMarkPlacer();
             var i_3 = l_1 - 1;
@@ -787,11 +788,11 @@ var AbstractWord = /** @class */ (function () {
                         word.value[i_3].nucleus = s_1.nucleus;
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_a = word.value[i_3].onset).push.apply(_a, __spread(s_1.onset));
+                                (_a = word.value[i_3].onset).push.apply(_a, __spreadArray([], __read(s_1.onset)));
                                 break;
                             case 1:
                                 word.value[i_3].onset.pop();
-                                (_b = word.value[i_3].onset).push.apply(_b, __spread(s_1.onset));
+                                (_b = word.value[i_3].onset).push.apply(_b, __spreadArray([], __read(s_1.onset)));
                                 break;
                             case 2:
                                 word.value[i_3].onset = s_1.onset;
@@ -805,11 +806,11 @@ var AbstractWord = /** @class */ (function () {
                         word.value[i_3].coda = s_1.coda;
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_c = word.value[i_3].nucleus).push.apply(_c, __spread(s_1.nucleus));
+                                (_c = word.value[i_3].nucleus).push.apply(_c, __spreadArray([], __read(s_1.nucleus)));
                                 break;
                             case 1:
                                 word.value[i_3].nucleus.pop();
-                                (_d = word.value[i_3].nucleus).push.apply(_d, __spread(s_1.nucleus));
+                                (_d = word.value[i_3].nucleus).push.apply(_d, __spreadArray([], __read(s_1.nucleus)));
                                 break;
                             case 2:
                                 word.value[i_3].nucleus = s_1.nucleus;
@@ -822,11 +823,11 @@ var AbstractWord = /** @class */ (function () {
                     else if (s_1.hasOnset() && !s_1.hasNucleus()) { // s.onset is actually a coda in this case
                         switch (subgroups.drop.length) {
                             case 0:
-                                (_e = word.value[i_3].coda).push.apply(_e, __spread(s_1.onset));
+                                (_e = word.value[i_3].coda).push.apply(_e, __spreadArray([], __read(s_1.onset)));
                                 break;
                             case 1:
                                 word.value[i_3].coda.pop();
-                                (_f = word.value[i_3].coda).push.apply(_f, __spread(s_1.onset));
+                                (_f = word.value[i_3].coda).push.apply(_f, __spreadArray([], __read(s_1.onset)));
                                 break;
                             case 2:
                                 word.value[i_3].coda = s_1.onset;
